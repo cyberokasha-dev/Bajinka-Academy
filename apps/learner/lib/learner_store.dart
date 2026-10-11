@@ -7,7 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class LearnerStore extends ChangeNotifier {
   LearnerStore(this.client);
   final SupabaseClient? client;
-  final local = SharedPreferencesAsync();
+  late final local = SharedPreferencesAsync();
   StreamSubscription<AuthState>? subscription;
   String? owner;
   String displayName = '';
