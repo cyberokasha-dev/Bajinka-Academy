@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'learner_store.dart';
 
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const AcademyApp());
@@ -15,11 +16,25 @@ class AcademyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'Bajinka Academy', debugShowCheckedModeBanner: false,
-    theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff087f78)), scaffoldBackgroundColor: const Color(0xfff6f8fa)),
+    theme: academyTheme(Brightness.light), darkTheme: academyTheme(Brightness.dark),
+
     home: LearnerShell(client: client),
   );
 }
 
+const teal = Color(0xff0eaaa7);
+const navy = Color(0xff1e2e52);
+const border = Color(0xffe0e3eb);
+ThemeData academyTheme(Brightness brightness) {
+  final dark = brightness == Brightness.dark;
+  final base = ThemeData(useMaterial3: true, brightness: brightness, fontFamily: 'Arial', colorScheme: ColorScheme.fromSeed(seedColor: teal, brightness: brightness).copyWith(primary: teal, surface: dark ? const Color(0xff172033) : Colors.white));
+  return base.copyWith(scaffoldBackgroundColor: dark ? const Color(0xff101827) : const Color(0xfffbfcfd),
+    textTheme: base.textTheme.apply(bodyColor: dark ? const Color(0xffe2e8f0) : navy, displayColor: dark ? Colors.white : navy),
+    dividerColor: border, appBarTheme: AppBarTheme(backgroundColor: dark ? const Color(0xff101827) : const Color(0xfffbfcfd), foregroundColor: dark ? Colors.white : navy, elevation: 0, surfaceTintColor: Colors.transparent),
+    textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: teal, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)))),
+    filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(backgroundColor: teal, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)))),
+  );
+}
 const sections = ['Home', 'My courses', 'Practice', 'Projects', 'Notebook', 'Assessments', 'Progress', 'Certificates', 'Resources', 'Settings', 'Sources & Acknowledgements', 'Privacy Policy'];
 const chapters = ['Functions and Variables', 'Conditionals', 'Loops', 'Exceptions', 'Libraries', 'Unit Tests', 'File I/O', 'Regular Expressions', 'Object-Oriented Programming', 'Et Cetera', 'Final Project and Course Assessment'];
 const topics = ['Running and saving Python programs', 'print, strings, and comments', 'Variables and assignment', 'input and string methods', 'Numbers and conversion', 'Arithmetic and formatted output', 'Functions and parameters', 'Return values and program structure'];
@@ -37,6 +52,8 @@ class _LearnerShellState extends State<LearnerShell> {
   int? chapter;
   String? topic;
   String lessonTab = 'Learn';
+  bool dark = false;
+  final pageScroll = ScrollController();
   final note = TextEditingController();
   final code = TextEditingController();
   late final LearnerStore store;
@@ -78,6 +95,7 @@ class _LearnerShellState extends State<LearnerShell> {
       code.text = store.draft(title)['code'] as String;
     });
     unawaited(store.profile(topic: title));
+    if (pageScroll.hasClients) pageScroll.jumpTo(0);
   }
   Widget signInButton() => OutlinedButton.icon(
     style: OutlinedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xff1f1f1f), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
@@ -90,43 +108,44 @@ class _LearnerShellState extends State<LearnerShell> {
     : 'Sign in with Google to save private notes, code drafts and your learning journey. Google setup is managed by the owner.');
   Widget homeProgress() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
     Text('Welcome back${store.displayName.isEmpty ? "" : ", ${store.displayName}"}', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
-    const SizedBox(height: 8), const Text('A little practice every day. Your next step starts here.'),
-    const SizedBox(height: 24),
-    Wrap(spacing: 16, runSpacing: 12, children: [
-      metric('Topics viewed', store.countStage('viewed')),
-      metric('Practised', store.countStage('practised')),
-      metric('Self-reviewed', store.countStage('reviewed')),
-      metric('Topic notes', store.drafts.values.where((d) => (d['notes'] as String? ?? '').isNotEmpty).length),
-    ]),
-    const SizedBox(height: 20),
-    panel('Your progress', 'Personal study record • ${store.countStage('reviewed')} of ${topics.length} mapped topics self-reviewed. Assessed course completion begins when marking rules are published.'),
-    LinearProgressIndicator(value: store.countStage('reviewed') / topics.length, minHeight: 8, borderRadius: BorderRadius.circular(8)),
-    if (store.lastTopic != null && topics.contains(store.lastTopic)) panel('Continue learning', store.lastTopic!, action: () => openTopic(store.lastTopic!), button: 'Continue'),
-    panel('Python Foundations', 'Functions and Variables • 8 mapped topics. Explore the course and keep your own learning notes.', action: () => select('My courses'), button: 'Open my course'),
-    panel('Your learning workspace', 'Notes, Python drafts and self-review progress save on this browser or phone. Use Copy to back up your work. Account sync will be added later.'),
+    const SizedBox(height: 6), const Text('Your private Python study space. Learn at your own pace — no deadlines, no streak penalties.', style: TextStyle(color: Color(0xff69758e), fontSize: 16)),
+    const SizedBox(height: 28),
+    panel('Continue learning', store.lastTopic ?? 'Start with Running and saving Python programs.', action: () => openTopic(store.lastTopic ?? topics.first), button: 'Resume your last topic  →', icon: Icons.school_outlined),
+    const SizedBox(height: 16),
+    surface(Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      const Row(children: [Icon(Icons.menu_book_outlined, color: teal, size: 20), SizedBox(width: 10), Expanded(child: Text('Python Foundations: Independent Study', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)))]),
+      const SizedBox(height: 8), const Text('In development', style: TextStyle(fontSize: 12, color: Color(0xff69758e))),
+      const SizedBox(height: 20), const Text('Your progress', style: TextStyle(fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8), LinearProgressIndicator(value: store.countStage('reviewed') / topics.length, minHeight: 8, backgroundColor: const Color(0xffeef2f6), borderRadius: BorderRadius.circular(8)),
+      const SizedBox(height: 8), Text('${store.countStage('reviewed')}/${topics.length} opening chapter topics self-reviewed', textAlign: TextAlign.right, style: const TextStyle(fontSize: 12, color: Color(0xff69758e))),
+      Align(alignment: Alignment.centerLeft, child: TextButton(onPressed: () => select('My courses'), child: const Text('Open my course  →'))),
+    ])),
+    const SizedBox(height: 30), const Text('Learning record', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+    const SizedBox(height: 16), Wrap(spacing: 16, runSpacing: 12, children: [metric('Topics viewed', store.countStage('viewed')), metric('Practised', store.countStage('practised')), metric('Self-reviewed', store.countStage('reviewed')), metric('Topic notes', store.drafts.values.where((d) => (d['notes'] as String? ?? '').isNotEmpty).length)]),
+    const SizedBox(height: 20), const Text('Saved on this device. Assessed completion and account sync will be connected later.', style: TextStyle(color: Color(0xff69758e), fontSize: 13)),
   ]);
-  Widget metric(String label, int value) => SizedBox(width: 180, child: panel('$value', label));
-  void select(String value) { autosave?.cancel(); if (topic != null) unawaited(store.save(topic!)); setState(() { section = value; chapter = null; topic = null; }); }
+  Widget metric(String label, int value) => SizedBox(width: 180, child: surface(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('$value', style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700)), const SizedBox(height: 6), Text(label, style: const TextStyle(color: Color(0xff69758e)))])));
+  void select(String value) { autosave?.cancel(); if (topic != null) unawaited(store.save(topic!)); setState(() { section = value; chapter = null; topic = null; }); if (pageScroll.hasClients) pageScroll.jumpTo(0); }
   @override
-  void dispose() { autosave?.cancel(); store.removeListener(refresh); store.dispose(); note.dispose(); code.dispose(); super.dispose(); }
+  void dispose() { autosave?.cancel(); store.removeListener(refresh); store.dispose(); note.dispose(); code.dispose(); pageScroll.dispose(); super.dispose(); }
   Widget navigation() => ListView(children: [
-    const Padding(padding: EdgeInsets.all(24), child: Row(children: [Icon(Icons.school_outlined, color: Color(0xff087f78)), SizedBox(width: 10), Text('Bajinka Academy', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18))])),
-    for (final item in sections) ListTile(selected: section == item, title: Text(item), onTap: () { select(item); scaffoldKey.currentState?.closeDrawer(); }),
+    const Padding(padding: EdgeInsets.all(24), child: Text('Bajinka Python Academy', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18))),
+    for (var i = 0; i < sections.length; i++) ListTile(leading: Icon([Icons.dashboard_outlined, Icons.menu_book_outlined, Icons.edit_note, Icons.folder_outlined, Icons.description_outlined, Icons.fact_check_outlined, Icons.insights_outlined, Icons.workspace_premium_outlined, Icons.link, Icons.settings_outlined, Icons.info_outline, Icons.privacy_tip_outlined][i], size: 20), selected: section == sections[i], selectedTileColor: teal.withValues(alpha: 0.08), title: Text(sections[i] == 'Home' ? 'Dashboard' : sections[i] == 'My courses' ? 'My Course' : sections[i] == 'Practice' ? 'Practice and Homework' : sections[i]), onTap: () { select(sections[i]); scaffoldKey.currentState?.closeDrawer(); }),
   ]);
-  Widget panel(String title, String body, {VoidCallback? action, String? button}) => Card(margin: const EdgeInsets.symmetric(vertical: 8), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: Color(0xffe3e8ed))), child: SizedBox(width: double.infinity, child: Padding(padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: 12), Text(body), if (action != null) Padding(padding: const EdgeInsets.only(top: 16), child: FilledButton(onPressed: action, child: Text(button ?? 'Open')))]))));
+  Widget surface(Widget child, {double padding = 24}) => Container(width: double.infinity, padding: EdgeInsets.all(padding), decoration: BoxDecoration(color: dark ? const Color(0xff172033) : Colors.white, border: Border.all(color: dark ? const Color(0xff334155) : border), borderRadius: BorderRadius.circular(6)), child: child);
+  Widget panel(String title, String body, {VoidCallback? action, String? button, IconData? icon}) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: surface(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [if (icon != null) ...[Icon(icon, color: teal, size: 22), const SizedBox(width: 12)], Expanded(child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)))]), const SizedBox(height: 12), Text(body, style: const TextStyle(height: 1.55)), if (action != null) Padding(padding: const EdgeInsets.only(top: 8), child: TextButton(onPressed: action, child: Text(button ?? 'Open')))])));
+  Widget lessonContent() => panel(lessonTab == 'Learn' ? 'Lesson content' : lessonTab, 'Your existing Base44 course content is awaiting approved import. My Notes and My Code are available now.');
+  Widget studyProgress() => surface(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('YOUR PROGRESS', style: TextStyle(fontSize: 11, letterSpacing: 0.8, color: Color(0xff69758e))), const SizedBox(height: 10), Wrap(spacing: 22, runSpacing: 12, children: [for (final stage in ['viewed', 'practised', 'reviewed', 'demonstrated']) InkWell(onTap: stage == 'demonstrated' ? null : () => store.mark(topic!, stage, store.draft(topic!)[stage] != true), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(store.draft(topic!)[stage] == true ? Icons.check_circle_outline : Icons.radio_button_unchecked, size: 16, color: stage == 'demonstrated' ? const Color(0xffa0a9b8) : teal), const SizedBox(width: 7), Text(stage == 'reviewed' ? 'Self-reviewed' : stage == 'demonstrated' ? 'Demonstrated understanding' : stage[0].toUpperCase() + stage.substring(1), style: const TextStyle(fontSize: 12, color: Color(0xff69758e)))]))])]), padding: 16);
   Widget body() {
     if (section == 'Home' || section == 'Progress') return homeProgress();
     if (section == 'My courses') {
       if (topic != null) return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         TextButton(onPressed: () => setState(() { topic = null; }), child: const Text('← Back to topics')),
         Text(topic!, style: Theme.of(context).textTheme.headlineSmall),
-        const SizedBox(height: 8), const Text('My Course / Functions and Variables', style: TextStyle(color: Colors.blueGrey)),
+        const SizedBox(height: 16), const Text('My Course / Functions and Variables', style: TextStyle(color: Color(0xff69758e), fontSize: 12)),
         const SizedBox(height: 20),
-        SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [for (final label in ['Learn', 'Classwork', 'Homework', 'Challenge', 'Project', 'Assessment', 'My Notes', 'My Code', 'Resources']) Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(label), selected: lessonTab == label, onSelected: (_) => setState(() { lessonTab = label; })))])),
-        const SizedBox(height: 16),
-        panel('YOUR PROGRESS', 'Viewed → Practised → Self-reviewed. Demonstrated understanding requires a marked assessment.'),
-        Wrap(spacing: 8, runSpacing: 8, children: [for (final stage in ['viewed', 'practised', 'reviewed']) FilterChip(label: Text(stage == 'reviewed' ? 'Self-reviewed' : stage[0].toUpperCase() + stage.substring(1)), selected: store.draft(topic!)[stage] == true, onSelected: (value) => store.mark(topic!, stage, value))]),
-        const SizedBox(height: 20),
+        Container(decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: border))), child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [for (final label in ['Learn', 'Classwork', 'Homework', 'Challenge', 'Project', 'Assessment', 'My Notes', 'My Code', 'Resources']) InkWell(onTap: () => setState(() { lessonTab = label; }), child: Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14), decoration: BoxDecoration(border: Border(bottom: BorderSide(color: lessonTab == label ? teal : Colors.transparent, width: 2))), child: Text(label, style: TextStyle(fontSize: 14, color: lessonTab == label ? (dark ? Colors.white : navy) : const Color(0xff636b7e), fontWeight: lessonTab == label ? FontWeight.w600 : FontWeight.w400))))]))),
+        const SizedBox(height: 20), if (lessonTab == 'Learn') ...[studyProgress(), const SizedBox(height: 26)],
         if (lessonTab == 'My Notes' || lessonTab == 'My Code') ...[
           Text(lessonTab, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
@@ -134,16 +153,18 @@ class _LearnerShellState extends State<LearnerShell> {
           const SizedBox(height: 12), Text(store.draft(topic!)['status'] as String),
           Wrap(spacing: 12, children: [FilledButton.icon(onPressed: () => store.save(topic!), icon: const Icon(Icons.save_outlined), label: const Text('Save on device')), OutlinedButton.icon(onPressed: () async { await Clipboard.setData(ClipboardData(text: lessonTab == 'My Notes' ? note.text : code.text)); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied — paste into a file to keep a backup.'))); }, icon: const Icon(Icons.copy), label: const Text('Copy'))]),
           if (lessonTab == 'My Code') panel('Python workspace', 'Your draft saves locally. Code execution and automatic marking are not connected yet.'),
-        ] else panel(lessonTab == 'Learn' ? 'Lesson content' : lessonTab, lessonTab == 'Learn' ? 'This topic is mapped. The course author’s targets, explanation and examples are awaiting import. You can use My Notes and My Code now.' : 'The course author will publish the exact ${lessonTab.toLowerCase()} content and marking rules here. Your study workspace is available now.'),
+        ] else lessonContent(),
 
       ]);
-      if (chapter != null) return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        TextButton(onPressed: () => setState(() { chapter = null; }), child: const Text('← Back to chapters')),
-        Text(chapters[chapter!], style: Theme.of(context).textTheme.headlineSmall),
-        if (chapter == 0) ...[for (final title in topics) ListTile(title: Text(title), subtitle: const Text('Draft • lesson, practice and challenge'), trailing: const Icon(Icons.chevron_right), onTap: () => openTopic(title))] else panel('Topics awaiting authoring', 'Full topic content and exact questions will be supplied by the course author.'),
-        panel('Chapter assessment and cumulative project', 'Locked until authored requirements and marking rules are published.'),
+      return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        const Text('My Course', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700)), const SizedBox(height: 20),
+        panel('Python Foundations: Independent Study', 'In development • 11 planned chapters • 8 opening chapter topics'),
+        const SizedBox(height: 20),
+        for (var i = 0; i < chapters.length; i++) ...[
+          Padding(padding: const EdgeInsets.symmetric(vertical: 16), child: Row(children: [SizedBox(width: 32, child: Text('$i.', style: const TextStyle(fontFamily: 'monospace', fontSize: 12, color: Color(0xff69758e)))), Expanded(child: Text(chapters[i], style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700))), const Text('DRAFT', style: TextStyle(fontSize: 9, letterSpacing: 1, color: Color(0xffa0a9b8)))])),
+          if (i == 0) Padding(padding: const EdgeInsets.only(left: 12), child: Container(decoration: const BoxDecoration(border: Border(left: BorderSide(color: border))), child: Column(children: [for (final title in topics) ListTile(dense: true, minLeadingWidth: 12, leading: const Icon(Icons.radio_button_unchecked, size: 15, color: Color(0xffb8bfcc)), title: Text(title, style: TextStyle(fontSize: 14, color: dark ? Colors.white : navy)), onTap: () => openTopic(title))]))),
+        ],
       ]);
-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [panel('Python Foundations', 'Independent study • 11 planned chapters • content in development'), for (var i = 0; i < chapters.length; i++) ListTile(leading: CircleAvatar(child: Text('$i')), title: Text(chapters[i]), subtitle: const Text('Draft'), trailing: const Icon(Icons.chevron_right), onTap: () => setState(() { chapter = i; }))]);
     }
     if (section == 'Notebook') return Column(children: [panel('My notebook', 'Your topic notes save on this device. Open a note to continue writing.'), if (store.drafts.values.every((d) => (d['notes'] as String? ?? '').isEmpty)) panel('Start your first note', 'Open a course topic and choose My Notes.', action: () => select('My courses'), button: 'Browse topics'), for (final entry in store.drafts.entries.where((e) => (e.value['notes'] as String? ?? '').isNotEmpty)) panel(entry.key, entry.value['notes'] as String, action: () => openTopic(entry.key), button: 'Edit note')]);
     if (section == 'Settings') return Column(children: [
@@ -168,9 +189,11 @@ class _LearnerShellState extends State<LearnerShell> {
   }
   @override
   Widget build(BuildContext context) => LayoutBuilder(builder: (context, bounds) {
-    final wide = bounds.maxWidth >= 950;
-    return Scaffold(key: scaffoldKey, appBar: AppBar(backgroundColor: Colors.white, title: const Text('Bajinka Academy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)), actions: [IconButton(tooltip: 'Home', onPressed: () => select('Home'), icon: const Icon(Icons.home_outlined))]),
-      drawer: wide ? null : Drawer(child: Builder(builder: (_) => navigation())),
-      body: Row(children: [if (wide) SizedBox(width: 250, child: navigation()), Expanded(child: SingleChildScrollView(padding: EdgeInsets.all(wide ? 32 : 16), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 1050), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if (store.message.isNotEmpty) MaterialBanner(content: Text(store.message), actions: [TextButton(onPressed: store.load, child: const Text('Retry'))]), body()])))))]));
+    final wide = bounds.maxWidth >= 700;
+    return Theme(data: academyTheme(dark ? Brightness.dark : Brightness.light), child: Scaffold(key: scaffoldKey,
+      appBar: AppBar(centerTitle: true, toolbarHeight: 60, title: Row(mainAxisSize: MainAxisSize.min, children: [const Icon(Icons.school_outlined, color: teal, size: 20), const SizedBox(width: 8), Flexible(child: Text('Bajinka Python Academy', style: TextStyle(fontSize: wide ? 16 : 14, fontWeight: FontWeight.w700)))]), bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1)), actions: [IconButton(tooltip: dark ? 'Light mode' : 'Dark mode', onPressed: () => setState(() { dark = !dark; }), icon: Icon(dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20))]),
+      drawer: Drawer(backgroundColor: dark ? const Color(0xff101827) : const Color(0xfffbfcfd), shape: const RoundedRectangleBorder(), child: navigation()),
+      body: SingleChildScrollView(controller: pageScroll, padding: EdgeInsets.symmetric(horizontal: wide ? 24 : 16, vertical: wide ? 32 : 24), child: Align(alignment: Alignment.topCenter, child: ConstrainedBox(constraints: BoxConstraints(maxWidth: section == 'Home' || section == 'Progress' ? 1200 : 736), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if (store.message.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(store.message)), body(), const SizedBox(height: 48), const Divider(), Wrap(spacing: 16, children: [TextButton(onPressed: () => select('Sources & Acknowledgements'), child: const Text('Sources & Acknowledgements')), TextButton(onPressed: () => select('Privacy Policy'), child: const Text('Privacy Policy'))])])))),
+    ));
   });
 }
