@@ -1,4 +1,4 @@
-name: Academy web checks and downloads
+name: Learner web and APK
 on:
   push:
     branches: [main]
@@ -19,8 +19,13 @@ jobs:
           flutter-version: '3.47.7'
           channel: stable
           cache: true
-      - name: Generate web platform
-        run: flutter create --platforms=web --org=com.bajinka --project-name=bajinka_academy .
+      - name: Set up Java
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Generate web and Android platforms
+        run: flutter create --platforms=web,android --org=com.bajinka --project-name=bajinka_academy .
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
@@ -31,15 +36,11 @@ jobs:
           name: bajinka-academy-learner-web
           path: apps/learner/build/web
           if-no-files-found: error
-  admin:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - run: node --check apps/admin/app.js
-      - run: python3 -m json.tool shared/course-map.json > /dev/null
-      - name: Upload admin website
+      - name: Build test APK
+        run: flutter build apk --debug
+      - name: Upload test APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: bajinka-academy-admin-web
-          path: apps/admin
+          name: bajinka-academy-test-apk
+          path: apps/learner/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
