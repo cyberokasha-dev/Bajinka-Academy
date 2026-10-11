@@ -1,0 +1,56 @@
+name: Learner checks and builds
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  learner:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/learner
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Generate Android and web platform files
+        run: flutter create --platforms=android,web --org=com.bajinka --project-name=bajinka_academy .
+      - name: Install packages
+        run: flutter pub get
+      - name: Analyze learner
+        run: flutter analyze
+      - name: Test learner
+        run: flutter test
+      - name: Build learner web
+        run: flutter build web
+      - name: Build test APK
+        run: flutter build apk --debug
+      - name: Upload learner web
+        uses: actions/upload-artifact@v4
+        with:
+          name: bajinka-academy-web
+          path: apps/learner/build/web
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: bajinka-academy-test-apk
+          path: apps/learner/build/app/outputs/flutter-apk/app-debug.apk
+  admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Check admin JavaScript
+        run: node --check apps/admin/app.js
+      - name: Validate course map
+        run: python3 -m json.tool shared/course-map.json > /dev/null
