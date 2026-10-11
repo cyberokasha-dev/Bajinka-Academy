@@ -1,0 +1,88 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; worker-src blob:; connect-src https://cdn.jsdelivr.net; style-src 'unsafe-inline'; font-src 'none'; img-src data:;">
+<title>Bajinka Python workspace</title><style>
+*{box-sizing:border-box}body{margin:0;font:14px Arial,sans-serif;color:#1e2e52;background:#fff}label{display:block;font-size:12px;margin:12px 0 7px;color:#636b7e}textarea{width:100%;resize:vertical;border:1px solid #e0e3eb;border-radius:5px;padding:14px;font:14px/1.6 ui-monospace,monospace;tab-size:4;color:inherit;background:#f4fbfc}#code{height:270px;min-height:150px}#input{height:65px;background:#fbfcfd}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button{border:1px solid #e0e3eb;border-radius:5px;background:white;color:#1e2e52;padding:9px 12px;font:13px Arial;cursor:pointer}button.primary{background:#0eaaa7;color:white;border-color:#0eaaa7}button:disabled{opacity:.5;cursor:default}button:focus-visible,textarea:focus-visible{outline:2px solid #0eaaa7;outline-offset:2px}pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;background:#eef2f6;padding:12px;border-radius:5px;font:13px/1.5 ui-monospace,monospace;min-height:55px;max-height:220px;overflow:auto}#status{min-height:22px;font-size:12px;margin-top:10px}#cases{padding:8px 0;font-size:13px}.case{padding:7px 0;border-bottom:1px solid #e0e3eb}.bad{color:#a52727}.good{color:#087f78}.help{font-size:12px;color:#69758e;line-height:1.5;margin-bottom:12px}body.dark{color:#e2e8f0;background:#172033}.dark textarea,.dark pre{background:#101827;color:#e2e8f0;border-color:#334155}.dark button{background:#172033;color:#e2e8f0;border-color:#334155}.dark label,.dark .help{color:#aab7cd}@media(max-width:480px){#code{height:230px}button{padding:10px}textarea{font-size:13px}}
+</style></head><body>
+<label for="code">Python source</label><textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Python source"></textarea>
+<label for="input">Program input — one response per line</label><textarea id="input" spellcheck="false" aria-label="Program input" placeholder="Enter input values before running"></textarea>
+<div class="toolbar"><button id="run" class="primary">▶ Run Python</button><button id="check">Check output tests</button><button id="stop" disabled>■ Stop</button><button id="download">Download .py</button></div>
+<div id="status" role="status" aria-live="polite">Ready. Python loads when you run; internet is required for the runtime.</div>
+<div id="cases"></div><label>Output</label><pre id="output" aria-label="Program output"></pre><label>Input prompts</label><pre id="prompts"></pre>
+<p class="help">Code runs in an isolated worker on this device. Tests check behaviour, not a fixed source solution. Design requirements need self-review. Stop ends a run; output is limited to 20,000 characters.</p>
+<script type="text/plain" id="worker-source">
+import {loadPyodide} from 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs';
+self.onmessage=async({data})=>{
+ let py;
+ try {py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/'});} catch(e){self.postMessage({kind:'infrastructure',error:'Python runtime could not load. Check your internet connection and try again.'});return;}
+ self.postMessage({kind:'running'});
+ const results=[];
+ for(let i=0;i<data.inputs.length;i++){
+  py.globals.set('_academy_request',JSON.stringify({code:data.code,input:data.inputs[i]}));
+  try {
+   const text=py.runPython(`
+import sys, builtins, io, json, traceback, os, shutil
+_request = json.loads(_academy_request)
+_values = list(_request['input'])
+_prompts = []
+class _LimitedOutput(io.StringIO):
+    def write(self, value):
+        if self.tell() + len(value) > 20000:
+            raise RuntimeError('Output limit reached. Reduce output or check for a runaway loop.')
+        return super().write(value)
+def _input(prompt=''):
+    _prompts.append(str(prompt))
+    if not _values:
+        raise EOFError('Not enough program input. Add one response per line and run again.')
+    return str(_values.pop(0))
+_directory = '/home/pyodide/academy-work'
+os.chdir('/home/pyodide')
+if os.path.exists(_directory):
+    shutil.rmtree(_directory)
+os.mkdir(_directory)
+os.chdir(_directory)
+_output = _LimitedOutput()
+_oldout, _olderr = sys.stdout, sys.stderr
+_error = ''
+try:
+    sys.stdout = _output
+    sys.stderr = _output
+    _scope = {'__name__': '__main__', '__builtins__': dict(vars(builtins), input=_input)}
+    exec(compile(_request['code'], 'learner.py', 'exec'), _scope)
+except BaseException:
+    _error = traceback.format_exc(limit=8)
+finally:
+    sys.stdout, sys.stderr = _oldout, _olderr
+json.dumps({'output': _output.getvalue(), 'prompts': _prompts, 'error': _error})
+`);
+   results.push(JSON.parse(text));
+  }catch(e){results.push({output:'',prompts:[],error:String(e)});}
+  self.postMessage({kind:'case',index:i});
+ }
+ self.postMessage({kind:'done',results});
+};
+</script><script>
+const $=id=>document.getElementById(id);let config={tests:[]},worker=null,timer=null,editTimer=null,busy=false;
+function send(type,data){const payload=JSON.stringify({type,...data});if(window.AcademyBridge)window.AcademyBridge.postMessage(payload);else parent.postMessage(payload,location.origin);}
+window.academyInit=c=>{if(busy)stopRun(false);config=c;$('code').value=c.code||'';$('input').value=c.input||'';$('check').hidden=!c.tests?.length;document.body.classList.toggle('dark',!!c.dark);};
+window.addEventListener('message',e=>{if(e.source!==parent||e.origin!==location.origin)return;try{const data=typeof e.data==='string'?JSON.parse(e.data):e.data;if(data.type==='academy-init')window.academyInit(data.config);}catch(_){}});
+function edit(){clearTimeout(editTimer);editTimer=setTimeout(()=>send('draft',{code:$('code').value,input:$('input').value}),150);}
+$('code').addEventListener('input',edit);$('input').addEventListener('input',edit);
+$('code').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const t=e.target,s=t.selectionStart;t.setRangeText('    ',s,t.selectionEnd,'end');edit();}});
+function stopRun(report=true){clearTimeout(timer);worker?.terminate();worker=null;busy=false;$('run').disabled=false;$('check').disabled=false;$('stop').disabled=true;if(report)$('status').textContent='Stopped. Your code and input remain saved.';}
+function run(check){if(busy)return;send('draft',{code:$('code').value,input:$('input').value});if(!$('code').value.trim()){$('status').textContent='Write some Python code first.';return;}
+ busy=true;$('run').disabled=true;$('check').disabled=true;$('stop').disabled=false;$('cases').replaceChildren();$('output').textContent='';$('prompts').textContent='';$('status').textContent='Loading Python… first use downloads the runtime.';
+ const source=$('worker-source').textContent;const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));worker=new Worker(url,{type:'module'});URL.revokeObjectURL(url);
+ timer=setTimeout(()=>{stopRun(false);$('status').textContent='Runtime loading timed out. Check your connection; no failed attempt was recorded.';},90000);
+ worker.onerror=()=>{stopRun(false);$('status').textContent='Python could not start. Check your connection and browser support; no failed attempt was recorded.';};
+ worker.onmessage=({data})=>{if(data.kind==='running'){clearTimeout(timer);timer=setTimeout(()=>{stopRun(false);$('status').textContent='Run stopped after the time limit. Check your loops. No graded result was recorded.';},15000);$('status').textContent='Running…';}
+  if(data.kind==='infrastructure'){stopRun(false);$('status').textContent=data.error;}
+  if(data.kind==='case')$('status').textContent=check?`Checking case ${data.index+1} of ${config.tests.length}…`:'Running…';
+  if(data.kind==='done'){stopRun(false);const results=data.results;const last=results[results.length-1];$('output').textContent=last.output+(last.error?'\n'+last.error:'');$('prompts').textContent=(last.prompts||[]).join('\n')||'(No prompts)';
+   if(check){const tests=results.map((r,i)=>({input:config.tests[i].input,expected:config.tests[i].expected,actual:r.output,error:r.error,passed:!r.error&&r.output.replace(/\r\n/g,'\n').trimEnd()===String(config.tests[i].expected).replace(/\r\n/g,'\n').trimEnd()}));let passed=tests.every(t=>t.passed);for(let i=0;i<tests.length;i++){const t=tests[i],d=document.createElement('div');d.className='case '+(t.passed?'good':'bad');d.textContent=`${t.passed?'✓':'✗'} Case ${i+1} · input ${JSON.stringify(t.input)} · expected ${JSON.stringify(t.expected)}${t.passed?'':` · received ${JSON.stringify(t.actual)}${t.error?' · Python error':''}`}`;$('cases').append(d);}$('status').textContent=passed?'All output tests passed. Review any stated design requirements.':'Some output tests did not pass. Read the cases, edit, and try again.';send('result',{result:{status:'graded',passed,score:Math.round(tests.filter(t=>t.passed).length/tests.length*100),tests,feedback:$('status').textContent},code:$('code').value});}
+   else{$('status').textContent=last.error?'Python error — read the traceback above.':'Run finished.';send('run',{success:!last.error});}
+  }
+ };
+ const values=$('input').value.replace(/\r\n/g,'\n');worker.postMessage({code:$('code').value,inputs:check?config.tests.map(t=>t.input||[]):[values.length?values.split('\n'):[]]});
+}
+$('run').onclick=()=>run(false);$('check').onclick=()=>run(true);$('stop').onclick=()=>stopRun();$('download').onclick=()=>send('download',{code:$('code').value});
+window.addEventListener('pagehide',()=>stopRun(false));send('ready',{});
+</script></body></html>

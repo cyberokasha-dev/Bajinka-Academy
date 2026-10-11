@@ -26,6 +26,8 @@ jobs:
           java-version: '17'
       - name: Generate web and Android platforms
         run: flutter create --platforms=web,android --org=com.bajinka --project-name=bajinka_academy .
+      - name: Configure learner Android permissions and notifications
+        run: python ../../scripts/configure_learner_android.py
       - run: flutter pub get
       - name: Save resolved dependency lock
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
@@ -50,3 +52,4 @@ jobs:
           name: bajinka-academy-test-apk
           path: apps/learner/build/app/outputs/flutter-apk/app-debug.apk
           if-no-files-found: error
+

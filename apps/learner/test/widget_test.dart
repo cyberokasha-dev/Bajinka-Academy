@@ -1,28 +1,24 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:bajinka_academy/main.dart';
+import 'package:bajinka_academy/learner_store.dart';
 void main() {
-  testWidgets('guest can open course and use notes without login', (tester) async {
-    await tester.pumpWidget(const AcademyApp());
-    await tester.pumpAndSettle();
-    expect(find.text('Your progress'), findsOneWidget);
-    expect(find.text('Continue with Google'), findsNothing);
-    await tester.ensureVisible(find.text('Open my course  →'));
-    await tester.tap(find.text('Open my course  →'));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('Running and saving Python programs'));
-    await tester.tap(find.text('Running and saving Python programs'));
-    await tester.pumpAndSettle();
-    expect(find.text('YOUR PROGRESS'), findsOneWidget);
-    expect(tester.takeException(), isNull);
+  testWidgets('all chapter headings expand and draft topics open', (tester) async {
+    await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Open my course →'));await tester.tap(find.text('Open my course →'));await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('chapter-2')));await tester.tap(find.byKey(const ValueKey('chapter-2')));await tester.pumpAndSettle();
+    expect(find.text('while loops and termination'),findsOneWidget);
+    await tester.ensureVisible(find.text('while loops and termination'));await tester.tap(find.text('while loops and termination'));await tester.pumpAndSettle();
+    expect(find.text('Lesson awaiting authoring'),findsOneWidget);expect(find.text('My Notes'),findsOneWidget);expect(tester.takeException(),isNull);
   });
-  testWidgets('phone dashboard has no layout overflow', (tester) async {
-    tester.view.physicalSize = const Size(390, 844);
-    tester.view.devicePixelRatio = 1;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
-    await tester.pumpWidget(const AcademyApp());
-    await tester.pumpAndSettle();
-    expect(tester.takeException(), isNull);
+  testWidgets('guest can save a note without login', (tester) async {
+    final store=LearnerStore(storage:MemoryStorage());await tester.pumpWidget(AcademyApp(store:store));await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Resume your last topic →'));await tester.tap(find.text('Resume your last topic →'));await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('My Notes'));await tester.tap(find.text('My Notes'));await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField),'My own explanation');await tester.pumpAndSettle();expect(store.draft('python-c0-t0')['notes'],'My own explanation');expect(find.text('Saved on this device'),findsOneWidget);
+  });
+  testWidgets('phone dashboard has no overflow', (tester) async {
+    tester.view.physicalSize=const Size(390,844);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();expect(tester.takeException(),isNull);
   });
 }
