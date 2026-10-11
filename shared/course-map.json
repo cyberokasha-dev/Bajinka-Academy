@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "course": {
+    "id": "python-foundations-v1",
+    "title": "Python Foundations",
+    "status": "draft"
+  },
+  "chapters": [
+    {
+      "id": "python-c0",
+      "position": 0,
+      "title": "Functions and Variables",
+      "status": "draft"
+    },
+    {
+      "id": "python-c1",
+      "position": 1,
+      "title": "Conditionals",
+      "status": "draft"
+    },
+    {
+      "id": "python-c2",
+      "position": 2,
+      "title": "Loops",
+      "status": "draft"
+    },
+    {
+      "id": "python-c3",
+      "position": 3,
+      "title": "Exceptions",
+      "status": "draft"
+    },
+    {
+      "id": "python-c4",
+      "position": 4,
+      "title": "Libraries",
+      "status": "draft"
+    },
+    {
+      "id": "python-c5",
+      "position": 5,
+      "title": "Unit Tests",
+      "status": "draft"
+    },
+    {
+      "id": "python-c6",
+      "position": 6,
+      "title": "File I/O",
+      "status": "draft"
+    },
+    {
+      "id": "python-c7",
+      "position": 7,
+      "title": "Regular Expressions",
+      "status": "draft"
+    },
+    {
+      "id": "python-c8",
+      "position": 8,
+      "title": "Object-Oriented Programming",
+      "status": "draft"
+    },
+    {
+      "id": "python-c9",
+      "position": 9,
+      "title": "Et Cetera",
+      "status": "draft"
+    },
+    {
+      "id": "python-c10",
+      "position": 10,
+      "title": "Final Project and Course Assessment",
+      "status": "draft"
+    }
+  ],
+  "questionTypes": [
+    "single_choice",
+    "multiple_choice",
+    "short_answer",
+    "written_response",
+    "code",
+    "trace",
+    "debug",
+    "project"
+  ],
+  "markingModes": [
+    "exact_answer",
+    "accepted_answers",
+    "numeric_tolerance",
+    "test_cases",
+    "rubric_review"
+  ],
+  "legalPages": [
+    "sources-and-acknowledgements",
+    "privacy-policy",
+    "terms",
+    "accessibility"
+  ],
+  "sources": [
+    {
+      "name": "Harvard CS50P",
+      "url": "https://cs50.harvard.edu/python/",
+      "status": "reference_candidate"
+    },
+    {
+      "name": "Helsinki Python MOOC",
+      "url": "https://programming-26.mooc.fi/",
+      "status": "reference_candidate"
+    },
+    {
+      "name": "MIT OpenCourseWare",
+      "url": "https://ocw.mit.edu/",
+      "status": "reference_candidate"
+    },
+    {
+      "name": "Beijing Institute of Technology",
+      "url": "https://www.icourse163.org/course/BIT-268001",
+      "status": "reference_candidate"
+    }
+  ]
+}
