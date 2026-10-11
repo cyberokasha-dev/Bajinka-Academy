@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'learner_store.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SupabaseClient? client;
-  try {
-    await Supabase.initialize(url: 'https://zesvwdewewylotohcsgn.supabase.co', publishableKey: 'sb_publishable_pyX5NRIIF99KroUmr5RSyQ_xNO1WdwB');
-    client = Supabase.instance.client;
-  } catch (_) { /* Browsing remains available if account initialisation fails. */ }
-  runApp(AcademyApp(client: client));
+  runApp(const AcademyApp());
 }
 
 class AcademyApp extends StatelessWidget {
@@ -40,6 +36,7 @@ class _LearnerShellState extends State<LearnerShell> {
   String section = 'Home';
   int? chapter;
   String? topic;
+  String lessonTab = 'Learn';
   final note = TextEditingController();
   final code = TextEditingController();
   late final LearnerStore store;
@@ -76,7 +73,7 @@ class _LearnerShellState extends State<LearnerShell> {
     autosave?.cancel();
     if (topic != null) unawaited(store.save(topic!));
     setState(() {
-      section = 'My courses'; chapter = 0; topic = title;
+      section = 'My courses'; chapter = 0; topic = title; lessonTab = 'Learn';
       note.text = store.draft(title)['notes'] as String;
       code.text = store.draft(title)['code'] as String;
     });
@@ -91,50 +88,54 @@ class _LearnerShellState extends State<LearnerShell> {
   Widget account() => panel(store.signedIn ? 'Your account' : 'Save your learning', store.signedIn
     ? 'Signed in as ${store.displayName.isEmpty ? widget.client?.auth.currentUser?.email ?? "Learner" : store.displayName}.'
     : 'Sign in with Google to save private notes, code drafts and your learning journey. Google setup is managed by the owner.');
-  Widget homeProgress() => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-    account(), if (!store.signedIn) signInButton(),
-    const SizedBox(height: 16),
-    panel('Your progress', store.requiredCount == 0
-      ? 'No required activities are published yet. Completion is not calculated from visits.'
-      : '${store.completedCount} of ${store.requiredCount} required activities completed.'),
-    if (store.requiredCount > 0) LinearProgressIndicator(value: store.completedCount / store.requiredCount),
-    panel('Learning record', '${store.points} points • ${store.drafts.values.where((d) => (d["notes"] as String? ?? "").isNotEmpty).length} topic notes'),
+  Widget homeProgress() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    Text('Welcome back${store.displayName.isEmpty ? "" : ", ${store.displayName}"}', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w700)),
+    const SizedBox(height: 8), const Text('A little practice every day. Your next step starts here.'),
+    const SizedBox(height: 24),
+    Wrap(spacing: 16, runSpacing: 12, children: [
+      metric('Topics viewed', store.countStage('viewed')),
+      metric('Practised', store.countStage('practised')),
+      metric('Self-reviewed', store.countStage('reviewed')),
+      metric('Topic notes', store.drafts.values.where((d) => (d['notes'] as String? ?? '').isNotEmpty).length),
+    ]),
+    const SizedBox(height: 20),
+    panel('Your progress', 'Personal study record • ${store.countStage('reviewed')} of ${topics.length} mapped topics self-reviewed. Assessed course completion begins when marking rules are published.'),
+    LinearProgressIndicator(value: store.countStage('reviewed') / topics.length, minHeight: 8, borderRadius: BorderRadius.circular(8)),
     if (store.lastTopic != null && topics.contains(store.lastTopic)) panel('Continue learning', store.lastTopic!, action: () => openTopic(store.lastTopic!), button: 'Continue'),
-    panel('Python Foundations', 'Explore the planned chapters. Course content remains in development.', action: () => select('My courses'), button: 'Explore course map'),
+    panel('Python Foundations', 'Functions and Variables • 8 mapped topics. Explore the course and keep your own learning notes.', action: () => select('My courses'), button: 'Open my course'),
+    panel('Your learning workspace', 'Notes, Python drafts and self-review progress save on this browser or phone. Use Copy to back up your work. Account sync will be added later.'),
   ]);
+  Widget metric(String label, int value) => SizedBox(width: 180, child: panel('$value', label));
   void select(String value) { autosave?.cancel(); if (topic != null) unawaited(store.save(topic!)); setState(() { section = value; chapter = null; topic = null; }); }
   @override
   void dispose() { autosave?.cancel(); store.removeListener(refresh); store.dispose(); note.dispose(); code.dispose(); super.dispose(); }
   Widget navigation() => ListView(children: [
-    const Padding(padding: EdgeInsets.all(24), child: Text('BAJINKA\nACADEMY', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 22))),
+    const Padding(padding: EdgeInsets.all(24), child: Row(children: [Icon(Icons.school_outlined, color: Color(0xff087f78)), SizedBox(width: 10), Text('Bajinka Academy', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18))])),
     for (final item in sections) ListTile(selected: section == item, title: Text(item), onTap: () { select(item); scaffoldKey.currentState?.closeDrawer(); }),
   ]);
-  Widget panel(String title, String body, {VoidCallback? action, String? button}) => Card(child: Padding(padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: 12), Text(body), if (action != null) Padding(padding: const EdgeInsets.only(top: 16), child: FilledButton(onPressed: action, child: Text(button ?? 'Open')))])));
+  Widget panel(String title, String body, {VoidCallback? action, String? button}) => Card(margin: const EdgeInsets.symmetric(vertical: 8), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14), side: const BorderSide(color: Color(0xffe3e8ed))), child: SizedBox(width: double.infinity, child: Padding(padding: const EdgeInsets.all(24), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: Theme.of(context).textTheme.titleLarge), const SizedBox(height: 12), Text(body), if (action != null) Padding(padding: const EdgeInsets.only(top: 16), child: FilledButton(onPressed: action, child: Text(button ?? 'Open')))]))));
   Widget body() {
     if (section == 'Home' || section == 'Progress') return homeProgress();
     if (section == 'My courses') {
       if (topic != null) return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         TextButton(onPressed: () => setState(() { topic = null; }), child: const Text('← Back to topics')),
         Text(topic!, style: Theme.of(context).textTheme.headlineSmall),
-        panel('Lesson awaiting publication', 'Admin will publish targets, detailed explanations, examples and resources here. No course content has been invented for this preview.'),
-        Wrap(spacing: 8, runSpacing: 8, children: [for (final label in ['Learn', 'Classwork', 'Homework', 'Challenge', 'Reflection']) Chip(label: Text(label))]),
-        const SizedBox(height: 16), TextField(controller: note, minLines: 5, maxLines: 12, decoration: const InputDecoration(labelText: 'My notes and explanation', border: OutlineInputBorder()), enabled: store.signedIn && !store.loading, onChanged: (_) => editDraft()),
-        const SizedBox(height: 16), TextField(controller: code, minLines: 10, maxLines: 24, style: const TextStyle(fontFamily: 'monospace'), decoration: const InputDecoration(labelText: 'Python draft — execution comes later', border: OutlineInputBorder()), enabled: store.signedIn && !store.loading, onChanged: (_) => editDraft()),
-        const SizedBox(height: 12), Text(store.signedIn ? store.draft(topic!)['status'] as String : 'Sign in to write and save private work.'),
-        if (!store.signedIn) signInButton(),
-        if (store.signedIn) Wrap(spacing: 12, children: [
-          TextButton(onPressed: () => store.save(topic!), child: const Text('Retry save')),
-          TextButton(onPressed: () async {
-            final id = topic!;
-            final accept = await showDialog<bool>(context: context, builder: (context) => AlertDialog(
-              title: const Text('Load cloud version?'),
-              content: const Text('This replaces your local changes. Copy them first if you want to keep them.'),
-              actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Load cloud version'))]));
-            if (accept != true) return;
-            await store.loadCloudDraft(id);
-            if (mounted && topic == id) setState(() { note.text = store.draft(id)['notes'] as String; code.text = store.draft(id)['code'] as String; });
-          }, child: const Text('Load cloud version')),
-        ]),
+        const SizedBox(height: 8), const Text('My Course / Functions and Variables', style: TextStyle(color: Colors.blueGrey)),
+        const SizedBox(height: 20),
+        SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [for (final label in ['Learn', 'Classwork', 'Homework', 'Challenge', 'Project', 'Assessment', 'My Notes', 'My Code', 'Resources']) Padding(padding: const EdgeInsets.only(right: 8), child: ChoiceChip(label: Text(label), selected: lessonTab == label, onSelected: (_) => setState(() { lessonTab = label; })))])),
+        const SizedBox(height: 16),
+        panel('YOUR PROGRESS', 'Viewed → Practised → Self-reviewed. Demonstrated understanding requires a marked assessment.'),
+        Wrap(spacing: 8, runSpacing: 8, children: [for (final stage in ['viewed', 'practised', 'reviewed']) FilterChip(label: Text(stage == 'reviewed' ? 'Self-reviewed' : stage[0].toUpperCase() + stage.substring(1)), selected: store.draft(topic!)[stage] == true, onSelected: (value) => store.mark(topic!, stage, value))]),
+        const SizedBox(height: 20),
+        if (lessonTab == 'My Notes' || lessonTab == 'My Code') ...[
+          Text(lessonTab, style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 12),
+          TextField(controller: lessonTab == 'My Notes' ? note : code, minLines: lessonTab == 'My Notes' ? 8 : 14, maxLines: 30, style: lessonTab == 'My Code' ? const TextStyle(fontFamily: 'monospace') : null, decoration: InputDecoration(hintText: lessonTab == 'My Notes' ? 'What did you learn? Write an example in your own words…' : '# Write your Python code here', filled: true, fillColor: Colors.white, border: const OutlineInputBorder()), enabled: !store.loading, onChanged: (_) => editDraft()),
+          const SizedBox(height: 12), Text(store.draft(topic!)['status'] as String),
+          Wrap(spacing: 12, children: [FilledButton.icon(onPressed: () => store.save(topic!), icon: const Icon(Icons.save_outlined), label: const Text('Save on device')), OutlinedButton.icon(onPressed: () async { await Clipboard.setData(ClipboardData(text: lessonTab == 'My Notes' ? note.text : code.text)); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied — paste into a file to keep a backup.'))); }, icon: const Icon(Icons.copy), label: const Text('Copy'))]),
+          if (lessonTab == 'My Code') panel('Python workspace', 'Your draft saves locally. Code execution and automatic marking are not connected yet.'),
+        ] else panel(lessonTab == 'Learn' ? 'Lesson content' : lessonTab, lessonTab == 'Learn' ? 'This topic is mapped. The course author’s targets, explanation and examples are awaiting import. You can use My Notes and My Code now.' : 'The course author will publish the exact ${lessonTab.toLowerCase()} content and marking rules here. Your study workspace is available now.'),
+
       ]);
       if (chapter != null) return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         TextButton(onPressed: () => setState(() { chapter = null; }), child: const Text('← Back to chapters')),
@@ -144,21 +145,17 @@ class _LearnerShellState extends State<LearnerShell> {
       ]);
       return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [panel('Python Foundations', 'Independent study • 11 planned chapters • content in development'), for (var i = 0; i < chapters.length; i++) ListTile(leading: CircleAvatar(child: Text('$i')), title: Text(chapters[i]), subtitle: const Text('Draft'), trailing: const Icon(Icons.chevron_right), onTap: () => setState(() { chapter = i; }))]);
     }
-    if (section == 'Notebook') return Column(children: [account(), if (!store.signedIn) signInButton(), for (final entry in store.drafts.entries.where((e) => (e.value['notes'] as String? ?? '').isNotEmpty)) panel(entry.key, entry.value['notes'] as String, action: () => openTopic(entry.key), button: 'Edit note')]);
-    if (section == 'Settings') return Column(children: [account(),
-      if (!store.signedIn) signInButton(),
-      if (store.signedIn) ...[
-        panel('Display name', store.displayName.isEmpty ? 'Choose the name shown in your account.' : store.displayName, action: () async {
-          final input = TextEditingController(text: store.displayName);
-          final name = await showDialog<String>(context: context, builder: (context) => AlertDialog(title: const Text('Your name'), content: TextField(controller: input, maxLength: 120), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, input.text), child: const Text('Save'))]));
-          input.dispose(); if (name != null) await store.profile(name: name);
-        }, button: 'Edit name'),
-        SwitchListTile(title: const Text('Study reminder preference'), subtitle: const Text('Preference only — notification delivery comes in a later phase.'), value: store.reminders, onChanged: (v) => store.profile(reminder: v)),
-        OutlinedButton(onPressed: () async { autosave?.cancel(); if (topic != null) await store.save(topic!); await store.logout(); }, child: const Text('Sign out')),
-      ],
+    if (section == 'Notebook') return Column(children: [panel('My notebook', 'Your topic notes save on this device. Open a note to continue writing.'), if (store.drafts.values.every((d) => (d['notes'] as String? ?? '').isEmpty)) panel('Start your first note', 'Open a course topic and choose My Notes.', action: () => select('My courses'), button: 'Browse topics'), for (final entry in store.drafts.entries.where((e) => (e.value['notes'] as String? ?? '').isNotEmpty)) panel(entry.key, entry.value['notes'] as String, action: () => openTopic(entry.key), button: 'Edit note')]);
+    if (section == 'Settings') return Column(children: [
+      panel('Device workspace', 'Learning work is stored on this device. No login is needed. Copy important notes and code before clearing browser storage.'),
+      panel('Your name', store.displayName.isEmpty ? 'Choose a name for your dashboard.' : store.displayName, action: () async {
+        final input = TextEditingController(text: store.displayName);
+        final name = await showDialog<String>(context: context, builder: (context) => AlertDialog(title: const Text('Your name'), content: TextField(controller: input, maxLength: 120), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(context, input.text), child: const Text('Save'))]));
+        if (name != null) await store.profile(name: name);
+      }, button: 'Edit name'),
     ]);
     if (section == 'Sources & Acknowledgements') return panel('Sources & Acknowledgements', 'A separate admin-managed page for sources actually used, attribution and licences. Planned reference sources include Harvard CS50P, Helsinki, MIT and Beijing Institute of Technology. These are references, not endorsements. Detailed published acknowledgements follow content review.');
-    if (section == 'Privacy Policy') return panel('Privacy Policy — draft', 'Admin will publish the operator’s reviewed policy here, covering accounts, private notes, submissions, notifications, retention and user rights. Google sign-in stores an account session; learner profile, notes, code drafts and progress are stored in Supabase. Local recovery copies are kept on your device. A full operator-reviewed policy is awaiting publication.');
+    if (section == 'Privacy Policy') return panel('Privacy Policy — draft', 'Admin will publish the operator’s reviewed policy here, covering accounts, private notes, submissions, notifications, retention and user rights. The current learner workspace saves notes, code and self-review records on this device. Account login is deferred. Clearing browser or app storage removes local records. A full operator-reviewed policy is awaiting publication.');
     if (section == 'Certificates') return panel('Certificates locked', 'Complete a fully published course and its required assessments/project. Then confirm your name and study dates, preview and download your course certificate.');
     return panel(section, switch (section) {
       'Practice' => 'Admin-authored A–D questions, writing, code, debugging and a challenge for each topic. Marking rules will be shown clearly.',
@@ -172,7 +169,7 @@ class _LearnerShellState extends State<LearnerShell> {
   @override
   Widget build(BuildContext context) => LayoutBuilder(builder: (context, bounds) {
     final wide = bounds.maxWidth >= 950;
-    return Scaffold(key: scaffoldKey, appBar: AppBar(title: Text(section), actions: [Padding(padding: const EdgeInsets.all(16), child: Text(store.signedIn ? 'My account' : 'Phase 2'))]),
+    return Scaffold(key: scaffoldKey, appBar: AppBar(backgroundColor: Colors.white, title: const Text('Bajinka Academy', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)), actions: [IconButton(tooltip: 'Home', onPressed: () => select('Home'), icon: const Icon(Icons.home_outlined))]),
       drawer: wide ? null : Drawer(child: Builder(builder: (_) => navigation())),
       body: Row(children: [if (wide) SizedBox(width: 250, child: navigation()), Expanded(child: SingleChildScrollView(padding: EdgeInsets.all(wide ? 32 : 16), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 1050), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if (store.message.isNotEmpty) MaterialBanner(content: Text(store.message), actions: [TextButton(onPressed: store.load, child: const Text('Retry'))]), body()])))))]));
   });

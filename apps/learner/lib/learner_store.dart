@@ -43,6 +43,18 @@ class LearnerStore extends ChangeNotifier {
     loading = true; message = ''; notifyListeners();
     final uid = owner;
     if (uid == null || client == null) {
+      try {
+        final cached = await local.getString('academy.guest.v3');
+        if (current != epoch) return;
+        if (cached != null) {
+          final data = Map<String, dynamic>.from(jsonDecode(cached));
+          lastTopic = data['lastTopic'] as String?;
+          displayName = data['name'] as String? ?? '';
+          for (final entry in Map<String, dynamic>.from(data['drafts'] ?? {}).entries) {
+            drafts[entry.key] = Map<String, dynamic>.from(entry.value);
+          }
+        }
+      } catch (_) { message = 'Device storage unavailable. Copy your work before leaving.'; }
       loading = false; notifyListeners(); return;
     }
     try {
@@ -99,20 +111,27 @@ class LearnerStore extends ChangeNotifier {
   }
   Map<String, dynamic> draft(String topic) => drafts[topic] ?? {'notes': '', 'code': '', 'revision': 0, 'dirty': false, 'status': 'No saved draft'};
   void edit(String topic, String notes, String code) {
-    if (!signedIn) return;
+    
     final previous = draft(topic);
     drafts[topic] = {...previous, 'notes': notes, 'code': code, 'dirty': true, 'status': 'Unsaved changes', 'change': ++changeCounter};
-    final uid = owner!;
+    final uid = owner ?? 'guest';
     final snapshot = jsonEncode(drafts);
     pending = pending.then((_) async {
-      try { await local.setString('academy.v2.$uid', snapshot); }
+      try { if (uid == 'guest') { await persistGuest(); } else { await local.setString('academy.v2.$uid', snapshot); } }
       catch (_) { if (owner == uid) { message = 'Local backup failed. Copy your work or save to the cloud.'; notifyListeners(); } }
     });
     notifyListeners();
   }
   Future<void> save(String topic) {
     final uid = owner;
-    if (uid == null) return Future.value();
+    if (uid == null) {
+      pending = pending.then((_) async {
+        try { await persistGuest(); drafts[topic]?['status'] = 'Saved on this device'; }
+        catch (_) { drafts[topic]?['status'] = 'Save failed — copy your work'; }
+        notifyListeners();
+      });
+      return pending;
+    }
     pending = pending.then((_) => _save(topic, uid));
     return pending;
   }
@@ -157,7 +176,11 @@ class LearnerStore extends ChangeNotifier {
   }
   Future<void> profile({String? name, String? topic, bool? reminder}) async {
     final uid = owner;
-    if (uid == null || client == null) return;
+    if (uid == null || client == null) {
+      if (name != null) displayName = name.trim();
+      if (topic != null) lastTopic = topic;
+      await persistGuest(); notifyListeners(); return;
+    }
     final values = {'user_id': uid, if (name != null) 'display_name': name.trim(), if (topic != null) 'last_topic': topic, if (reminder != null) 'study_reminders': reminder, 'updated_at': DateTime.now().toUtc().toIso8601String()};
     try {
       await client!.from('academy_profiles').upsert(values);
@@ -168,6 +191,15 @@ class LearnerStore extends ChangeNotifier {
     } catch (_) { message = 'Account preferences could not be saved. Try again.'; }
     notifyListeners();
   }
+  Future<void> persistGuest() => local.setString('academy.guest.v3', jsonEncode({'drafts': drafts, 'lastTopic': lastTopic, 'name': displayName}));
+  Future<void> mark(String topic, String stage, bool value) async {
+    final record = Map<String, dynamic>.from(draft(topic));
+    record[stage] = value;
+    drafts[topic] = record;
+    await persistGuest();
+    notifyListeners();
+  }
+  int countStage(String stage) => drafts.values.where((d) => d[stage] == true).length;
   @override
   void dispose() { subscription?.cancel(); super.dispose(); }
 }

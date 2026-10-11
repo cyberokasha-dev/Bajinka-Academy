@@ -17,10 +17,4 @@ void main() {
     expect(store.completedCount, 1);
     store.dispose();
   });
-  test('guest cannot create a private draft', () {
-    final store = LearnerStore(null);
-    store.edit('topic', 'private', 'print(1)');
-    expect(store.drafts, isEmpty);
-    store.dispose();
-  });
 }
