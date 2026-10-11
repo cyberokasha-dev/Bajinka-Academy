@@ -9,8 +9,8 @@ dependencies:
     sdk: flutter
   shared_preferences: 2.5.6
   file_picker: 10.3.10
-  pdf: 3.13.1
-  printing: 5.15.1
+  pdf: 3.11.3
+  printing: 5.14.2
   web: 1.1.1
   webview_flutter: 4.14.1
   url_launcher: 6.3.2
