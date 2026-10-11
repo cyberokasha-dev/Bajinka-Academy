@@ -1,9 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bajinka_academy/main.dart';
 void main() {
-  testWidgets('preview does not claim completed work and course opens', (tester) async {
+  testWidgets('guest sees honest progress and Google sign in', (tester) async {
     await tester.pumpWidget(const AcademyApp());
-    expect(find.text('Phase 1 preview'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Continue with Google'), findsOneWidget);
+    expect(find.text('Your progress'), findsOneWidget);
+    expect(find.textContaining('No required activities'), findsOneWidget);
+    await tester.ensureVisible(find.text('Explore course map'));
     await tester.tap(find.text('Explore course map'));
     await tester.pumpAndSettle();
     expect(find.text('Python Foundations'), findsOneWidget);
