@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'apps/learner/**'
+      - 'scripts/prepare_learner_web.py'
       - '.github/workflows/learner-pages.yml'
   workflow_dispatch:
 permissions:
@@ -32,6 +33,8 @@ jobs:
       - run: flutter test
       - name: Build for GitHub Pages path
         run: flutter build web --release --base-href /Bajinka-Academy/
+      - name: Version web assets and retire stale cache
+        run: python ../../scripts/prepare_learner_web.py "$GITHUB_SHA"
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload website
@@ -48,3 +51,4 @@ jobs:
       - name: Publish learner website
         id: deployment
         uses: actions/deploy-pages@v4
+

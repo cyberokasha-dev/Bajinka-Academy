@@ -39,6 +39,8 @@ jobs:
       - run: flutter test
       - name: Build learner website
         run: flutter build web
+      - name: Version web assets and retire stale cache
+        run: python ../../scripts/prepare_learner_web.py "$GITHUB_SHA"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: bajinka-academy-learner-web
