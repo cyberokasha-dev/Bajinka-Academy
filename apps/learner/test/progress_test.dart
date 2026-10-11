@@ -42,4 +42,26 @@ void main() {
     final written=exercises.firstWhere((e)=>e.type=='written');expect(gradeAnswer(written,'save run explain')['status'],'review');expect(gradeAnswer(written,'save run explain')['passed'],false);
     final numeric=exercises.firstWhere((e)=>e.type=='short');expect(gradeAnswer(numeric,' 8 ')['passed'],true);expect(gradeAnswer(numeric,'eight')['passed'],false);
   });
+  test('help disclosure persists and cannot be cleared by runner result', () async {
+    final storage=MemoryStorage();final first=LearnerStore(storage:storage);await first.start();
+    final exercise=exercises.firstWhere((e)=>e.type=='code');
+    first.edit('activity:${exercise.id}',helpUsed:true);await first.pending;
+    final second=LearnerStore(storage:storage);await second.start();
+    await second.recordAttempt(exercise,{'status':'graded','passed':true,'score':100,'helpUsed':false});
+    expect(second.attempts[exercise.id]!.last['helpUsed'],true);
+    first.dispose();second.dispose();
+  });
+  test('opening record gates issuance and preserves details on re-download', () async {
+    final store=LearnerStore(storage:MemoryStorage());await store.start();
+    await expectLater(store.issueOpeningRecord(),throwsFormatException);
+    for(final e in exercises.where((e)=>e.required)){await store.recordAttempt(e,{'status':'graded','passed':true,'score':100});}
+    await store.setReview('opening-project',true);await store.recordAssessment(100,{});
+    await expectLater(store.issueOpeningRecord(),throwsFormatException);
+    await store.preferences(displayName:'Learner One');final first=await store.issueOpeningRecord();
+    await store.preferences(displayName:'Learner Two');await store.setReview('opening-project',false);
+    final second=await store.issueOpeningRecord();
+    expect(second['id'],first['id']);expect(second['issuedAt'],first['issuedAt']);expect(second['name'],'Learner One');
+    expect(store.certificates.length,1);expect(store.fullCourseEligible,false);store.dispose();
+  });
+
 }

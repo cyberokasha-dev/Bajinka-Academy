@@ -5,10 +5,12 @@ Responsive Flutter learner website and Android app. Login and the admin build ar
 ## Learner features
 - Expandable chapters with topics and breadcrumbs; eight original starter lessons and later draft outlines.
 - Saved guest notes, code, input, attempts, revision queue and progress on the current device.
-- Python worker runner with input, traceback, stop/time/output limits and behavioural output tests.
+- Python worker runner with input, traceback, stop/time/output limits, function harnesses and exact/normalized/numeric output comparisons.
 - 19 starter activities, progressive hints, classwork, homework, challenges and a project.
 - Opening assessment, honest eligibility gates and downloadable progress PDFs.
-- JSON backup and validated restore, resources, separate acknowledgements and data/privacy information.
+- JSON backup and validated restore, Python-file import/download, copied lesson code and saved test feedback.
+- Issued opening study records retain their ID, date and learner details on re-download.
+- Resources, separate acknowledgements and data/privacy information.
 - Responsive layout, dark mode, text size and optional device reminders.
 
 Code and objective checks are local self-study evidence. Written explanations and design requirements need review. Full-course certificates remain locked while later lessons are drafts. No verified qualification or university endorsement is claimed.
@@ -31,4 +33,4 @@ The platform generator supplies standard Android/web wrappers. The configuration
 ## Admin and backend
 `apps/admin` remains a local planning preview, not a secured production admin. `docs/PRODUCT_MAP.md` and `shared/course-map.json` describe the planned product. Supabase configuration is retained separately; the guest learner currently runs without cloud sync or login. Do not connect local draft editing to production without authentication, server-enforced roles and publishing controls.
 
-Private Base44 course records have not been copied into this public learner. Only independently authored starter material and outlines are included.
+Private Base44 course records have not been copied into this public learner. The owner deferred importing new questions until the future admin stage. Existing starter material and outlines remain available. Login, secured admin publishing and cloud sync are deferred.

@@ -37,6 +37,10 @@ jobs:
           if-no-files-found: error
       - run: flutter analyze
       - run: flutter test
+      - name: Check runner comparison rules
+        run: node ../../scripts/test_learner_runner.cjs
+      - name: Check worker execution wrapper
+        run: python ../../scripts/test_learner_worker.py
       - name: Build learner website
         run: flutter build web
       - name: Version web assets and retire stale cache

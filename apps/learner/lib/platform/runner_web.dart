@@ -17,7 +17,7 @@ class _PythonRunnerState extends State<PythonRunner> {
   late final JSFunction listener;
   @override void initState() {
     super.initState();
-    frame = web.HTMLIFrameElement()..src = Uri.base.resolve('assets/assets/runner/runner.html?v=0.3.1').toString()..title = 'Python code runner';
+    frame = web.HTMLIFrameElement()..src = Uri.base.resolve('assets/assets/runner/runner.html?v=0.4.0').toString()..title = 'Python code runner';
     frame.style..border = '0'..width = '100%'..height = '100%';
     listener = ((web.MessageEvent event) {
       if (event.source != frame.contentWindow || event.origin != web.window.location.origin) return;
@@ -30,7 +30,7 @@ class _PythonRunnerState extends State<PythonRunner> {
     ui.platformViewRegistry.registerViewFactory(view, (_) => frame);
   }
   void send() => frame.contentWindow?.postMessage(jsonEncode({'type':'academy-init','config':widget.config}).toJS, web.window.location.origin.toJS);
-  @override void didUpdateWidget(covariant PythonRunner oldWidget) { super.didUpdateWidget(oldWidget); if (oldWidget.config['dark'] != widget.config['dark']) send(); }
+  @override void didUpdateWidget(covariant PythonRunner oldWidget) { super.didUpdateWidget(oldWidget); if (oldWidget.config['dark'] != widget.config['dark'] || oldWidget.config['revision'] != widget.config['revision']) send(); }
   @override void dispose() { web.window.removeEventListener('message', listener); super.dispose(); }
   @override Widget build(BuildContext context) => HtmlElementView(viewType: view);
 }

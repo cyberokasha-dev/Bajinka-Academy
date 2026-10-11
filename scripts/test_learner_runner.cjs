@@ -1,0 +1,11 @@
+const assert = require('node:assert/strict');
+const {compareOutput} = require('../apps/learner/assets/runner/marking.js');
+assert.equal(compareOutput('32.0\n', '32', {comparison:'numeric'}), true);
+assert.equal(compareOutput('1.6666667', String(5/3), {comparison:'numeric',tolerance:0.000001}), true);
+assert.equal(compareOutput('32.1', '32', {comparison:'numeric'}), false);
+for (const bad of ['', 'NaN', 'Infinity', '32\n32', '32abc']) assert.equal(compareOutput(bad, '32', {comparison:'numeric'}), false);
+assert.equal(compareOutput('a\r\nb\n','a\nb'),true);
+assert.equal(compareOutput(' a\nb','a\nb'),false);
+assert.equal(compareOutput('a\n','a',{comparison:'exact'}),false);
+assert.equal(compareOutput('a','a',{comparison:'unknown'}),false);
+console.log('Runner comparison checks passed');

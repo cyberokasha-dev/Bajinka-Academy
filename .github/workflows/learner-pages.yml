@@ -31,6 +31,10 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
+      - name: Check runner comparison rules
+        run: node ../../scripts/test_learner_runner.cjs
+      - name: Check worker execution wrapper
+        run: python ../../scripts/test_learner_worker.py
       - name: Build for GitHub Pages path
         run: flutter build web --release --base-href /Bajinka-Academy/
       - name: Version web assets and retire stale cache

@@ -60,8 +60,8 @@ class LearnerStore extends ChangeNotifier {
     loading = false; changed();
   }
   Map<String, dynamic> draft(String id) => drafts[id] ?? {'notes': '', 'code': '', 'input': '', 'viewed': false, 'practised': false, 'reviewed': false};
-  void edit(String id, {String? notes, String? code, String? input, String? response}) {
-    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (input != null) 'input': input, if (response != null) 'response': response, 'updatedAt': DateTime.now().toIso8601String()};
+  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision}) {
+    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
     unawaited(save());
   }
   Future<void> visit(String id) async {
@@ -96,7 +96,7 @@ class LearnerStore extends ChangeNotifier {
     return pending;
   }
   Future<void> recordAttempt(Exercise exercise, Map<String, dynamic> result, {String answer = '', bool helpUsed = false}) async {
-    final record = <String, dynamic>{'id': '${DateTime.now().microsecondsSinceEpoch}', 'exercise': exercise.id, 'topic': exercise.topic, 'version': 1, 'submittedAt': DateTime.now().toIso8601String(), 'answer': answer, 'helpUsed': helpUsed, ...result};
+    final record = <String, dynamic>{'id': '${DateTime.now().microsecondsSinceEpoch}', 'exercise': exercise.id, 'topic': exercise.topic, 'version': 1, 'submittedAt': DateTime.now().toIso8601String(), 'answer': answer, ...result, 'helpUsed': helpUsed || draft('activity:${exercise.id}')['helpUsed'] == true};
     final history = attempts.putIfAbsent(exercise.id, () => []);
     history.add(record);
     if (history.length > 30) history.removeAt(0);
@@ -118,6 +118,19 @@ class LearnerStore extends ChangeNotifier {
     attempts.putIfAbsent('opening-assessment', () => []).add({'id':'${DateTime.now().microsecondsSinceEpoch}', 'submittedAt':DateTime.now().toIso8601String(), 'score':score, 'answers':answers, 'status':'graded', 'version':1});
     await save();
   }
+  Map<String,dynamic>? get issuedOpeningRecord {
+    for (final record in certificates) { if (record['kind'] == 'opening-study-record') return record; }
+    return null;
+  }
+  Future<Map<String,dynamic>> issueOpeningRecord() async {
+    final existing = issuedOpeningRecord;
+    if (existing != null) return Map<String,dynamic>.from(existing);
+    if (!openingRecordEligible) throw const FormatException('Complete the required checks, assessment and project review first.');
+    if (name.trim().isEmpty) throw const FormatException('Confirm your name before issuing your study record.');
+    final now = DateTime.now();
+    final record = <String,dynamic>{'kind':'opening-study-record','id':'BAJINKA-C0-${now.microsecondsSinceEpoch}','name':name.trim(),'issuedAt':now.toIso8601String(),'startedAt':startedAt,'completed':completedCount,'required':requiredCount,'assessment':assessmentBest,'projectReviewed':true};
+    certificates.add(record); await save(); return Map<String,dynamic>.from(record);
+  }
   Map<String, dynamic> snapshot() => {'format':'bajinka-device-backup','version':1,'name':name,'lastTopic':lastTopic,'startedAt':startedAt,'dark':dark,'textScale':textScale,'reminders':reminders,'drafts':drafts,'attempts':attempts,'weak':weak.toList(),'reviews':reviews,'certificates':certificates};
   String exportBackup() => const JsonEncoder.withIndent('  ').convert(snapshot());
   static Map<String, dynamic> validateBackup(String raw) {
@@ -131,12 +144,20 @@ class LearnerStore extends ChangeNotifier {
     final allowed = courseTopics.map((t) => t.id).toSet()..add('general')..add('opening-assessment')..addAll(exercises.map((e) => 'activity:${e.id}'));
     for (final entry in (decoded['drafts'] as Map).entries) {
       if (!allowed.contains(entry.key) || entry.value is! Map) throw const FormatException('Unknown topic or invalid draft.');
-      for (final field in ['notes','code','input','response']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! String) throw const FormatException('Draft text is invalid.'); }
-      for (final field in ['viewed','practised','reviewed']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! bool) throw const FormatException('Draft progress is invalid.'); }
+      for (final field in ['notes','code','input','response','editorRevision']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! String) throw const FormatException('Draft text is invalid.'); }
+      for (final field in ['viewed','practised','reviewed','helpUsed']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! bool) throw const FormatException('Draft progress is invalid.'); }
     }
     final validExercises = exercises.map((e) => e.id).toSet()..add('opening-assessment');
     for (final entry in (decoded['attempts'] as Map).entries) {
       if (!validExercises.contains(entry.key) || entry.value is! List || (entry.value as List).any((e) => e is! Map || (e['score'] != null && e['score'] is! num) || e['submittedAt'] is! String || (e['answer'] != null && e['answer'] is! String))) throw const FormatException('Attempts are invalid.');
+    }
+    for (final history in (decoded['attempts'] as Map).values) {
+      for (final attempt in history as List) {
+        for (final field in ['passed','helpUsed']) { if (attempt[field] != null && attempt[field] is! bool) throw const FormatException('Attempt flags are invalid.'); }
+        if (attempt['feedback'] != null && attempt['feedback'] is! String) throw const FormatException('Attempt feedback is invalid.');
+        final tests = attempt['tests'];
+        if (tests != null && (tests is! List || tests.any((t) => t is! Map || t['actual'] is! String || t['error'] is! String || t['passed'] is! bool))) throw const FormatException('Attempt test details are invalid.');
+      }
     }
     if ((decoded['weak'] as List).any((e) => e is! String || !allowed.contains(e))) throw const FormatException('Revision topics are invalid.');
     if ((decoded['reviews'] as Map).values.any((e) => e is! bool)) throw const FormatException('Review values are invalid.');
