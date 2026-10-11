@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/rendering.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'learner_store.dart';
 
 
+SemanticsHandle? accessibility;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  accessibility = SemanticsBinding.instance.ensureSemantics();
   runApp(const AcademyApp());
 }
 
@@ -149,7 +152,7 @@ class _LearnerShellState extends State<LearnerShell> {
         if (lessonTab == 'My Notes' || lessonTab == 'My Code') ...[
           Text(lessonTab, style: Theme.of(context).textTheme.titleLarge),
           const SizedBox(height: 12),
-          TextField(controller: lessonTab == 'My Notes' ? note : code, minLines: lessonTab == 'My Notes' ? 8 : 14, maxLines: 30, style: lessonTab == 'My Code' ? const TextStyle(fontFamily: 'monospace') : null, decoration: InputDecoration(hintText: lessonTab == 'My Notes' ? 'What did you learn? Write an example in your own words…' : '# Write your Python code here', filled: true, fillColor: Colors.white, border: const OutlineInputBorder()), enabled: !store.loading, onChanged: (_) => editDraft()),
+          TextField(controller: lessonTab == 'My Notes' ? note : code, minLines: lessonTab == 'My Notes' ? 8 : 14, maxLines: 30, style: lessonTab == 'My Code' ? const TextStyle(fontFamily: 'monospace') : null, decoration: InputDecoration(hintText: lessonTab == 'My Notes' ? 'What did you learn? Write an example in your own words…' : '# Write your Python code here', filled: true, fillColor: dark ? const Color(0xff172033) : Colors.white, border: const OutlineInputBorder()), enabled: !store.loading, onChanged: (_) => editDraft()),
           const SizedBox(height: 12), Text(store.draft(topic!)['status'] as String),
           Wrap(spacing: 12, children: [FilledButton.icon(onPressed: () => store.save(topic!), icon: const Icon(Icons.save_outlined), label: const Text('Save on device')), OutlinedButton.icon(onPressed: () async { await Clipboard.setData(ClipboardData(text: lessonTab == 'My Notes' ? note.text : code.text)); if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied — paste into a file to keep a backup.'))); }, icon: const Icon(Icons.copy), label: const Text('Copy'))]),
           if (lessonTab == 'My Code') panel('Python workspace', 'Your draft saves locally. Code execution and automatic marking are not connected yet.'),

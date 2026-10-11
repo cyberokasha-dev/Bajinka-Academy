@@ -7,8 +7,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Your progress'), findsOneWidget);
     expect(find.text('Continue with Google'), findsNothing);
-    await tester.ensureVisible(find.text('Open my course'));
-    await tester.tap(find.text('Open my course'));
+    await tester.ensureVisible(find.text('Open my course  →'));
+    await tester.tap(find.text('Open my course  →'));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Running and saving Python programs'));
     await tester.tap(find.text('Running and saving Python programs'));

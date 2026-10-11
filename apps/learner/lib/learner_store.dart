@@ -126,7 +126,7 @@ class LearnerStore extends ChangeNotifier {
     final uid = owner;
     if (uid == null) {
       pending = pending.then((_) async {
-        try { await persistGuest(); drafts[topic]?['status'] = 'Saved on this device'; }
+        try { drafts[topic]?['status'] = 'Saved on this device'; await persistGuest(); }
         catch (_) { drafts[topic]?['status'] = 'Save failed — copy your work'; }
         notifyListeners();
       });
