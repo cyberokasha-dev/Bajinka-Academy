@@ -9,10 +9,9 @@
 <div id="cases"></div><label>Output</label><pre id="output" aria-label="Program output"></pre><label>Input prompts</label><pre id="prompts"></pre>
 <p class="help">Code runs in an isolated worker on this device. Tests check behaviour, not a fixed source solution. Design requirements need self-review. Stop ends a run; output is limited to 20,000 characters.</p>
 <script type="text/plain" id="worker-source">
-import {loadPyodide} from 'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs';
 self.onmessage=async({data})=>{
  let py;
- try {py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/'});} catch(e){self.postMessage({kind:'infrastructure',error:'Python runtime could not load. Check your internet connection and try again.'});return;}
+ try {const {loadPyodide}=await import('https://cdn.jsdelivr.net/pyodide/v314.0.7/full/pyodide.mjs');py=await loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v314.0.7/full/'});} catch(e){self.postMessage({kind:'infrastructure',error:'Python runtime could not load: '+String(e.message||e)});return;}
  self.postMessage({kind:'running'});
  const results=[];
  for(let i=0;i<data.inputs.length;i++){
@@ -72,7 +71,7 @@ function run(check){if(busy)return;send('draft',{code:$('code').value,input:$('i
  busy=true;$('run').disabled=true;$('check').disabled=true;$('stop').disabled=false;$('cases').replaceChildren();$('output').textContent='';$('prompts').textContent='';$('status').textContent='Loading Python… first use downloads the runtime.';
  const source=$('worker-source').textContent;const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));worker=new Worker(url,{type:'module'});URL.revokeObjectURL(url);
  timer=setTimeout(()=>{stopRun(false);$('status').textContent='Runtime loading timed out. Check your connection; no failed attempt was recorded.';},90000);
- worker.onerror=()=>{stopRun(false);$('status').textContent='Python could not start. Check your connection and browser support; no failed attempt was recorded.';};
+ worker.onerror=e=>{stopRun(false);$('status').textContent='Python could not start: '+(e.message||'worker initialization error')+'. No failed attempt was recorded.';};
  worker.onmessage=({data})=>{if(data.kind==='running'){clearTimeout(timer);timer=setTimeout(()=>{stopRun(false);$('status').textContent='Run stopped after the time limit. Check your loops. No graded result was recorded.';},15000);$('status').textContent='Running…';}
   if(data.kind==='infrastructure'){stopRun(false);$('status').textContent=data.error;}
   if(data.kind==='case')$('status').textContent=check?`Checking case ${data.index+1} of ${config.tests.length}…`:'Running…';
