@@ -1,4 +1,4 @@
-name: Learner checks and builds
+name: Academy web checks and downloads
 on:
   push:
     branches: [main]
@@ -14,43 +14,32 @@ jobs:
         working-directory: apps/learner
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Set up Java
-        uses: actions/setup-java@v4
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
         with:
-          distribution: temurin
-          java-version: '17'
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
+          flutter-version: '3.47.7'
           channel: stable
           cache: true
-      - name: Generate Android and web platform files
-        run: flutter create --platforms=android,web --org=com.bajinka --project-name=bajinka_academy .
-      - name: Install packages
-        run: flutter pub get
-      - name: Analyze learner
-        run: flutter analyze
-      - name: Test learner
-        run: flutter test
-      - name: Build learner web
+      - name: Generate web platform
+        run: flutter create --platforms=web --org=com.bajinka --project-name=bajinka_academy .
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - name: Build learner website
         run: flutter build web
-      - name: Build test APK
-        run: flutter build apk --debug
-      - name: Upload learner web
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: bajinka-academy-web
+          name: bajinka-academy-learner-web
           path: apps/learner/build/web
-      - name: Upload test APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: bajinka-academy-test-apk
-          path: apps/learner/build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
   admin:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-      - name: Check admin JavaScript
-        run: node --check apps/admin/app.js
-      - name: Validate course map
-        run: python3 -m json.tool shared/course-map.json > /dev/null
+      - run: node --check apps/admin/app.js
+      - run: python3 -m json.tool shared/course-map.json > /dev/null
+      - name: Upload admin website
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: bajinka-academy-admin-web
+          path: apps/admin
+          if-no-files-found: error
