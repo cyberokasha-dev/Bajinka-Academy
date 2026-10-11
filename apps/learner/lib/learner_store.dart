@@ -60,8 +60,8 @@ class LearnerStore extends ChangeNotifier {
     loading = false; changed();
   }
   Map<String, dynamic> draft(String id) => drafts[id] ?? {'notes': '', 'code': '', 'input': '', 'viewed': false, 'practised': false, 'reviewed': false};
-  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision}) {
-    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
+  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision, Map<String,dynamic>? lastRun}) {
+    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (code != null) 'codeEdited': true, if (lastRun != null) 'lastRun': lastRun, if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
     unawaited(save());
   }
   Future<void> visit(String id) async {
@@ -145,7 +145,9 @@ class LearnerStore extends ChangeNotifier {
     for (final entry in (decoded['drafts'] as Map).entries) {
       if (!allowed.contains(entry.key) || entry.value is! Map) throw const FormatException('Unknown topic or invalid draft.');
       for (final field in ['notes','code','input','response','editorRevision']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! String) throw const FormatException('Draft text is invalid.'); }
-      for (final field in ['viewed','practised','reviewed','helpUsed']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! bool) throw const FormatException('Draft progress is invalid.'); }
+      final lastRun = (entry.value as Map)['lastRun'];
+      if (lastRun != null && (lastRun is! Map || lastRun['output'] is! String || lastRun['error'] is! String || lastRun['code'] is! String || lastRun['recordedAt'] is! String || lastRun['prompts'] is! List || (lastRun['prompts'] as List).any((p) => p is! String))) throw const FormatException('Saved run details are invalid.');
+      for (final field in ['viewed','practised','reviewed','helpUsed','codeEdited']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! bool) throw const FormatException('Draft progress is invalid.'); }
     }
     final validExercises = exercises.map((e) => e.id).toSet()..add('opening-assessment');
     for (final entry in (decoded['attempts'] as Map).entries) {
@@ -177,6 +179,11 @@ class LearnerStore extends ChangeNotifier {
     weak.addAll((data['weak'] as List).cast<String>());
     reviews.addAll(Map<String, bool>.from(data['reviews'] as Map));
     certificates.addAll((data['certificates'] as List).map((a) => Map<String, dynamic>.from(a)));
+  }
+  Future<void> clearDeviceRecord() async {
+    await pending;
+    final empty = LearnerStore(storage:MemoryStorage());
+    applySnapshot(empty.snapshot()); empty.dispose(); await save();
   }
   Future<void> restore(String raw) async { final data = validateBackup(raw); await pending; applySnapshot(data); await save(); }
   @override void dispose() { alive = false; super.dispose(); }

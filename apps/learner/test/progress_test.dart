@@ -64,4 +64,14 @@ void main() {
     expect(store.certificates.length,1);expect(store.fullCourseEligible,false);store.dispose();
   });
 
+  test('saved runtime evidence and explicitly empty code survive restore', () async {
+    final store=LearnerStore(storage:MemoryStorage());await store.start();
+    store.edit(starterTopics.first.id,code:'',lastRun:{'output':'Earlier output','error':'','prompts':<String>[],'code':'print("Earlier output")','recordedAt':DateTime.now().toIso8601String()});await store.pending;
+    final copy=LearnerStore(storage:MemoryStorage());await copy.start();await copy.restore(store.exportBackup());
+    expect(copy.draft(starterTopics.first.id)['codeEdited'],true);expect(copy.draft(starterTopics.first.id)['code'],'');
+    expect((copy.draft(starterTopics.first.id)['lastRun'] as Map)['output'],'Earlier output');
+    await copy.clearDeviceRecord();expect(copy.notesCount,0);expect(copy.drafts,isEmpty);expect(copy.attempts,isEmpty);expect(copy.certificates,isEmpty);expect(copy.reminders,false);
+    store.dispose();copy.dispose();
+  });
+
 }
