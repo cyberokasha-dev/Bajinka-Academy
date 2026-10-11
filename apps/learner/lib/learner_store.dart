@@ -179,7 +179,8 @@ class LearnerStore extends ChangeNotifier {
     if (uid == null || client == null) {
       if (name != null) displayName = name.trim();
       if (topic != null) lastTopic = topic;
-      await persistGuest(); notifyListeners(); return;
+      try { await persistGuest(); } catch (_) { message = 'Device storage unavailable. Copy your work before leaving.'; }
+      notifyListeners(); return;
     }
     final values = {'user_id': uid, if (name != null) 'display_name': name.trim(), if (topic != null) 'last_topic': topic, if (reminder != null) 'study_reminders': reminder, 'updated_at': DateTime.now().toUtc().toIso8601String()};
     try {
@@ -196,7 +197,7 @@ class LearnerStore extends ChangeNotifier {
     final record = Map<String, dynamic>.from(draft(topic));
     record[stage] = value;
     drafts[topic] = record;
-    await persistGuest();
+    try { await persistGuest(); } catch (_) { message = 'Progress could not be saved on this device.'; }
     notifyListeners();
   }
   int countStage(String stage) => drafts.values.where((d) => d[stage] == true).length;
