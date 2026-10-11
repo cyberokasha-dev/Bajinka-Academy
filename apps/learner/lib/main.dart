@@ -86,7 +86,7 @@ class _LearnerShellState extends State<LearnerShell> {
     style: OutlinedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: const Color(0xff1f1f1f), padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
     onPressed: store.googleLogin,
     icon: Image.network('https://developers.google.com/identity/images/g-logo.png', width: 20, height: 20,
-      errorBuilder: (_, _, _) => const SizedBox(width: 20, height: 20)),
+      errorBuilder: (context, error, stack) => const SizedBox(width: 20, height: 20)),
     label: const Text('Continue with Google'),
   );
   Widget account() => panel(store.signedIn ? 'Your account' : 'Save your learning', store.signedIn

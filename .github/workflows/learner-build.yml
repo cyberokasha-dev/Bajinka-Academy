@@ -27,6 +27,12 @@ jobs:
       - name: Generate web and Android platforms
         run: flutter create --platforms=web,android --org=com.bajinka --project-name=bajinka_academy .
       - run: flutter pub get
+      - name: Save resolved dependency lock
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: learner-dependency-lock
+          path: apps/learner/pubspec.lock
+          if-no-files-found: error
       - run: flutter analyze
       - run: flutter test
       - name: Build learner website

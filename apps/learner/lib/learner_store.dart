@@ -52,11 +52,11 @@ class LearnerStore extends ChangeNotifier {
         final records = Map<String, dynamic>.from(jsonDecode(cached));
         for (final entry in records.entries) drafts[entry.key] = Map<String, dynamic>.from(entry.value);
       }
-      final results = await Future.wait([
-        client!.from('academy_profiles').select().eq('user_id', uid).maybeSingle(),
-        client!.from('academy_drafts').select().eq('user_id', uid),
-        client!.from('academy_activities').select().eq('course_id', 'python-foundations-v1'),
-        client!.from('academy_progress').select().eq('user_id', uid),
+      final results = await Future.wait<dynamic>([
+        Future<dynamic>(() async => await client!.from('academy_profiles').select().eq('user_id', uid).maybeSingle()),
+        Future<dynamic>(() async => await client!.from('academy_drafts').select().eq('user_id', uid)),
+        Future<dynamic>(() async => await client!.from('academy_activities').select().eq('course_id', 'python-foundations-v1')),
+        Future<dynamic>(() async => await client!.from('academy_progress').select().eq('user_id', uid)),
       ]);
       if (current != epoch) return;
       final profile = results[0] as Map<String, dynamic>?;
