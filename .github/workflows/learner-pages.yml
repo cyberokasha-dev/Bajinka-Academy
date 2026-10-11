@@ -1,0 +1,50 @@
+name: Publish learner website
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/learner/**'
+      - '.github/workflows/learner-pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: learner-pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/learner
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          flutter-version: '3.47.7'
+          channel: stable
+          cache: true
+      - run: flutter create --platforms=web --org=com.bajinka --project-name=bajinka_academy .
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - name: Build for GitHub Pages path
+        run: flutter build web --release --base-href /Bajinka-Academy/
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload website
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/learner/build/web
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish learner website
+        id: deployment
+        uses: actions/deploy-pages@v4
