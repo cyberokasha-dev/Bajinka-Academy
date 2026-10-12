@@ -1,7 +1,20 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bajinka_academy/course_content.dart';
 import 'package:bajinka_academy/learner_store.dart';
+class FailingCloud implements DeviceStorage {
+  bool fail=true;
+  String? saved;
+  @override Future<String?> read(String key) async=>saved;
+  @override Future<void> write(String key,String value) async {if(fail)throw const FormatException('offline');saved=value;}
+}
+class SlowCloud implements DeviceStorage {
+  final release=Completer<void>();
+  final writes=<String>[];
+  @override Future<String?> read(String key) async=>null;
+  @override Future<void> write(String key,String value) async {writes.add(value);if(writes.length==1)await release.future;}
+}
 void main() {
   test('empty curriculum cannot award completion or a new record', () async {
     final store = LearnerStore(storage:MemoryStorage());await store.start();
@@ -46,6 +59,22 @@ void main() {
     invalid['drafts'][courseTopics[0].id]['shellHistory']=[42];
     await expectLater(copy.restore(jsonEncode(invalid)),throwsFormatException);
     store.dispose();copy.dispose();
+  });
+  test('cloud failures remain visibly unsaved and retry saves the open work', () async {
+    final storage=FailingCloud();final store=LearnerStore(storage:storage,cloud:true);await store.start();
+    store.edit(starterTopics.first.id,notes:'Unsaved cloud note');await store.pending;
+    expect(store.saveFailed,true);expect(store.saveStatus,'Unsaved changes');expect(storage.saved,isNull);
+    expect(store.draft(starterTopics.first.id)['notes'],'Unsaved cloud note');
+    storage.fail=false;await store.save();expect(store.saveFailed,false);expect(store.saveStatus,'Saved to Supabase');
+    final restored=LearnerStore(storage:storage,cloud:true);await restored.start();expect(restored.draft(starterTopics.first.id)['notes'],'Unsaved cloud note');
+    store.dispose();restored.dispose();
+  });
+  test('serial cloud saves coalesce later edits without losing the latest snapshot', () async {
+    final storage=SlowCloud();final store=LearnerStore(storage:storage,cloud:true);await store.start();
+    store.edit(starterTopics.first.id,code:'first');await Future<void>.delayed(Duration.zero);
+    store.edit(starterTopics.first.id,code:'second');store.edit(starterTopics.first.id,code:'latest');
+    storage.release.complete();await store.pending;
+    expect(storage.writes.length,2);expect(jsonDecode(storage.writes.last)['drafts'][starterTopics.first.id]['code'],'latest');expect(store.saveFailed,false);store.dispose();
   });
   test('saved runtime evidence and explicitly empty code survive restore', () async {
     final store=LearnerStore(storage:MemoryStorage());await store.start();

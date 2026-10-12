@@ -32,7 +32,7 @@ Future<Uint8List> studyRecordPdf(LearnerStore store, {bool opening = false}) asy
     pw.Text('$completed of $required required starter activities passed local checks.'), pw.SizedBox(height: 8), pw.Text('Opening assessment best score: ${assessment.toStringAsFixed(0)}%'), pw.SizedBox(height: 8),
     pw.Text('Project design and explanation: ${record != null || store.reviews['opening-project'] == true ? 'self-reviewed' : 'review pending'}'), pw.SizedBox(height: 22),
     pw.Text('Study started: ${(record?['startedAt'] as String? ?? store.startedAt).split('T').first}    Recorded: ${recordedAt.split('T').first}', style: const pw.TextStyle(fontSize: 12)), if (record != null) pw.Text('Record ID: ${record['id']}', style: const pw.TextStyle(fontSize: 10)), pw.Spacer(),
-    pw.Text('Independent study evidence from this device. Output is checked locally; explanations and design are self-reviewed. This is not a verified examination, full-course qualification, or university-endorsed certificate.', textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 10)),
+    pw.Text('Independent study evidence from your learning workspace. Output is checked locally; explanations and design are self-reviewed. This is not a verified examination, full-course qualification, or university-endorsed certificate.', textAlign: pw.TextAlign.center, style: const pw.TextStyle(fontSize: 10)),
   ]))));
   return doc.save();
 }

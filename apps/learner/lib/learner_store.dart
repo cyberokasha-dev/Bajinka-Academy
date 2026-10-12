@@ -1,18 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'course_content.dart';
 
 abstract class DeviceStorage {
   Future<String?> read(String key);
   Future<void> write(String key, String value);
-}
-class PreferenceStorage implements DeviceStorage {
-  SharedPreferencesAsync? _prefs;
-  SharedPreferencesAsync get prefs => _prefs ??= SharedPreferencesAsync();
-  @override Future<String?> read(String key) => prefs.getString(key);
-  @override Future<void> write(String key, String value) => prefs.setString(key, value);
 }
 class MemoryStorage implements DeviceStorage {
   final values = <String, String>{};
@@ -20,8 +13,14 @@ class MemoryStorage implements DeviceStorage {
   @override Future<void> write(String key, String value) async { values[key] = value; }
 }
 
+class WorkspaceConflict implements Exception { const WorkspaceConflict(); }
+
 class LearnerStore extends ChangeNotifier {
-  LearnerStore({DeviceStorage? storage}) : storage = storage ?? PreferenceStorage();
+  LearnerStore({DeviceStorage? storage, this.cloud=false}) : storage = storage ?? MemoryStorage();
+  final bool cloud;
+  bool loadFailed=false, saveFailed=false, conflict=false;
+  bool _saving=false;
+  String? _queuedSnapshot;
   final DeviceStorage storage;
   static const key = 'academy.guest.v4';
   final drafts = <String, Map<String, dynamic>>{};
@@ -29,7 +28,7 @@ class LearnerStore extends ChangeNotifier {
   final weak = <String>{};
   final reviews = <String, bool>{};
   final certificates = <Map<String, dynamic>>[];
-  String name = '', message = '', saveStatus = 'Saved on this device';
+  String name = '', message = '', saveStatus = 'Ready';
   String? lastTopic;
   String startedAt = DateTime.now().toIso8601String();
   bool loading = true, dark = false, reminders = false;
@@ -38,11 +37,12 @@ class LearnerStore extends ChangeNotifier {
   bool alive = true;
   void changed() { if (alive) notifyListeners(); }
   Future<void> start() async {
+    loadFailed=false;
     try {
       final cached = await storage.read(key);
       if (cached != null) {
         applySnapshot(validateBackup(cached));
-      } else {
+      } else if(!cloud) {
         final old = await storage.read('academy.guest.v3');
         if (old != null) {
           final previous = Map<String, dynamic>.from(jsonDecode(old));
@@ -56,12 +56,13 @@ class LearnerStore extends ChangeNotifier {
           await storage.write(key, exportBackup());
         }
       }
-    } catch (_) { message = 'Device storage could not be loaded. Download a backup of important work before leaving.'; saveStatus = 'Storage unavailable'; }
+      saveStatus=cloud?'Loaded from Supabase':'Saved on this device';
+    } catch (_) {loadFailed=true;message=cloud?'Cloud workspace could not load. Check your connection and retry.':'Workspace could not load.';saveStatus='Storage unavailable';}
     loading = false; changed();
   }
   Map<String, dynamic> draft(String id) => drafts[id] ?? {'notes': '', 'code': '', 'input': '', 'viewed': false, 'practised': false, 'reviewed': false};
-  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision, Map<String,dynamic>? lastRun, List<String>? shellHistory}) {
-    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (code != null) 'codeEdited': true, if (lastRun != null) 'lastRun': lastRun, if (shellHistory != null) 'shellHistory': shellHistory.take(100).toList(), if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
+  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision, Map<String,dynamic>? lastRun, List<String>? shellHistory, String? shellTranscript}) {
+    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (code != null) 'codeEdited': true, if (lastRun != null) 'lastRun': lastRun, if (shellHistory != null) 'shellHistory': shellHistory.take(100).toList(), if(shellTranscript!=null) 'shellTranscript':shellTranscript, if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
     unawaited(save());
   }
   Future<void> visit(String id) async {
@@ -86,15 +87,22 @@ class LearnerStore extends ChangeNotifier {
     await save();
   }
   Future<void> save() {
-    saveStatus = 'Saving on this device…'; changed();
-    final snapshot = exportBackup();
-    pending = pending.then((_) async {
-      try { await storage.write(key, snapshot); saveStatus = 'Saved on this device'; message = ''; }
-      catch (_) { saveStatus = 'Save failed — work is still open'; message = 'Device storage failed. Download a backup before closing this page.'; }
-      changed();
+    saveStatus=cloud?'Saving to Supabase…':'Saving on this device…';changed();
+    _queuedSnapshot=exportBackup();
+    if(_saving)return pending;
+    _saving=true;
+    pending=Future<void>(() async {
+      while(_queuedSnapshot!=null){
+        final value=_queuedSnapshot!;_queuedSnapshot=null;
+        try {await storage.write(key,value);saveFailed=false;conflict=false;message='';}
+        catch(e){saveFailed=true;conflict=e is WorkspaceConflict;_queuedSnapshot=null;message=conflict?'Newer work exists in Supabase. Download your current work before reloading the cloud copy.':cloud?'Not saved to Supabase. Keep this page open and retry when connected.':'Save failed. Keep this page open.';}
+      }
+      _saving=false;
+      saveStatus=saveFailed?'Unsaved changes':cloud?'Saved to Supabase':'Saved on this device';changed();
     });
     return pending;
   }
+  Future<void> reloadCloud() async {await pending;await start();saveFailed=loadFailed;conflict=false;if(!loadFailed){for(final id in drafts.keys.toList()){drafts[id]={...drafts[id]!, 'editorRevision':'reload-${DateTime.now().microsecondsSinceEpoch}'};}}changed();}
   Future<void> recordAttempt(Exercise exercise, Map<String, dynamic> result, {String answer = '', bool helpUsed = false}) async {
     final record = <String, dynamic>{'id': '${DateTime.now().microsecondsSinceEpoch}', 'exercise': exercise.id, 'topic': exercise.topic, 'version': 1, 'submittedAt': DateTime.now().toIso8601String(), 'answer': answer, ...result, 'helpUsed': helpUsed || draft('activity:${exercise.id}')['helpUsed'] == true};
     final history = attempts.putIfAbsent(exercise.id, () => []);
@@ -145,6 +153,8 @@ class LearnerStore extends ChangeNotifier {
     for (final entry in (decoded['drafts'] as Map).entries) {
       if (!allowed.contains(entry.key) || entry.value is! Map) throw const FormatException('Unknown topic or invalid draft.');
       for (final field in ['notes','code','input','response','editorRevision']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! String) throw const FormatException('Draft text is invalid.'); }
+      final shellTranscript = (entry.value as Map)['shellTranscript'];
+      if(shellTranscript!=null && (shellTranscript is! String || shellTranscript.length>60000)) throw const FormatException('Shell transcript is invalid.');
       final shellHistory = (entry.value as Map)['shellHistory'];
       if (shellHistory != null && (shellHistory is! List || shellHistory.length > 100 || shellHistory.any((line) => line is! String))) throw const FormatException('Shell history is invalid.');
       final lastRun = (entry.value as Map)['lastRun'];
