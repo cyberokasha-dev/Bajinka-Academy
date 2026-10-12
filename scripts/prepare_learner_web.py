@@ -3,6 +3,9 @@ import pathlib, re, sys
 root = pathlib.Path('build/web')
 if not (root / 'assets/assets/runner/marking.js').is_file():
     raise SystemExit('Missing runner comparison asset; cannot publish a broken checker.')
+runner = root / 'assets/assets/runner/runner.html'
+if not runner.is_file() or 'id="shell-worker-source"' not in runner.read_text():
+    raise SystemExit('Missing interactive Python shell; cannot publish an incomplete workspace.')
 version = re.sub(r'[^a-zA-Z0-9]', '', sys.argv[1])[:16]
 bootstrap = root / 'flutter_bootstrap.js'
 s = bootstrap.read_text()

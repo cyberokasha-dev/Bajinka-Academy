@@ -151,21 +151,24 @@ class _LearnerShellState extends State<LearnerShell> {
   @override Widget build(BuildContext context) => Theme(data: academyTheme(store.dark), child: Builder(builder: (context) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(store.textScale)), child: Scaffold(key: scaffold,
     appBar: AppBar(centerTitle: true, toolbarHeight: 60, title: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.school_outlined, color: teal, size: 20), SizedBox(width: 8), Flexible(child: Text('Bajinka Python Academy', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)))]), bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1)), actions: [IconButton(tooltip: store.dark ? 'Light mode' : 'Dark mode', onPressed: () => store.preferences(night: !store.dark), icon: Icon(store.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20))]),
     drawer: Drawer(shape: const RoundedRectangleBorder(), child: ListView(children: [const Padding(padding: EdgeInsets.all(24), child: Text('Bajinka Python Academy', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18))), for (var i = 0; i < sections.length; i++) ListTile(leading: Icon(sectionIcons[i], size: 20), selected: section == sections[i], selectedTileColor: teal.withValues(alpha: .08), title: Text(sections[i] == 'Home' ? 'Dashboard' : sections[i]), onTap: () { search = ''; select(sections[i]); scaffold.currentState?.closeDrawer(); })])),
-    body: SingleChildScrollView(controller: scroll, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 28), child: Align(alignment: Alignment.topCenter, child: ConstrainedBox(constraints: BoxConstraints(maxWidth: section == 'Home' ? 1200 : 736), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if (store.message.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(store.message)), body(), const SizedBox(height: 48), const Divider(), Wrap(spacing: 16, children: [TextButton(onPressed: () => select('Sources & Acknowledgements'), child: const Text('Sources & Acknowledgements')), TextButton(onPressed: () => select('Privacy Policy'), child: const Text('Privacy Policy'))])])))),
+    body: SingleChildScrollView(controller: scroll, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 28), child: Align(alignment: Alignment.topCenter, child: ConstrainedBox(constraints: BoxConstraints(maxWidth: section == 'Home' || (section == 'My Course' && tab == 'My Code') ? 1200 : 736), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if (store.message.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(store.message)), body(), const SizedBox(height: 48), const Divider(), Wrap(spacing: 16, children: [TextButton(onPressed: () => select('Sources & Acknowledgements'), child: const Text('Sources & Acknowledgements')), TextButton(onPressed: () => select('Privacy Policy'), child: const Text('Privacy Policy'))])])))),
   ))));
   @override void dispose() { store.removeListener(refresh); store.dispose(); scroll.dispose(); note.dispose(); nameController.dispose(); super.dispose(); }
 }
 
 class RunnerPanel extends StatelessWidget {
-  const RunnerPanel({super.key, required this.store, required this.draftId, this.initial = '', this.exercise, this.height = 720, this.helpUsed = false});
+  const RunnerPanel({super.key, required this.store, required this.draftId, this.initial = '', this.exercise, this.height = 720, this.helpUsed = false, this.fullscreen = false});
   final LearnerStore store;
   final String draftId, initial;
   final Exercise? exercise;
   final double height;
-  final bool helpUsed;
+  final bool helpUsed, fullscreen;
   @override Widget build(BuildContext context) {
     final draft = store.draft(draftId);
-    return SizedBox(height: height, child: PythonRunner(key: ValueKey('runner-$draftId'), config: {'code':draft['codeEdited'] == true || (draft['code'] as String? ?? '').isNotEmpty ? draft['code'] : initial, 'input':draft['input'] ?? '', 'tests':exercise?.tests ?? [], 'dark':store.dark, 'revision':draft['editorRevision'], 'lastRun':draft['lastRun']}, onMessage: (m) {
+    return SizedBox(height: fullscreen ? height : (MediaQuery.sizeOf(context).height * .85).clamp(360.0, height).toDouble(), child: PythonRunner(key: ValueKey('runner-$draftId'), config: {'code':draft['codeEdited'] == true || (draft['code'] as String? ?? '').isNotEmpty ? draft['code'] : initial, 'input':draft['input'] ?? '', 'tests':exercise?.tests ?? [], 'dark':store.dark, 'revision':draft['editorRevision'], 'lastRun':draft['lastRun'], 'workspaceId':draftId, 'activityId':exercise?.id, 'activityTitle':exercise?.title, 'shellHistory':draft['shellHistory'] ?? <String>[], 'fullscreen':fullscreen}, onMessage: (m) {
+      if(m['workspaceId'] != draftId) return;
+      if(m['type']=='shell-history' && m['history'] is List) store.edit(draftId,shellHistory:List<String>.from(m['history']));
+      if(m['type']=='fullscreen') Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>FullRunner(title:exercise?.title ?? 'Python workspace',store:store,draftId:draftId,initial:initial,exercise:exercise))).then((_){store.edit(draftId,revision:'view-${DateTime.now().microsecondsSinceEpoch}');});
       if (m['type'] == 'draft') store.edit(draftId, code:m['code'] as String? ?? '', input:m['input'] as String? ?? '');
       if (m['type'] == 'result' && exercise != null) unawaited(store.recordAttempt(exercise!, Map<String, dynamic>.from(m['result']), answer:m['code'] as String? ?? '', helpUsed:helpUsed));
       if (m['type'] == 'clear') store.edit(draftId,lastRun:{'output':'','error':'','prompts':<String>[],'code':draft['code'] as String? ?? '', 'cleared':true,'recordedAt':DateTime.now().toIso8601String()});
@@ -180,7 +183,7 @@ class FullRunner extends StatelessWidget {
   final String title, draftId, initial;
   final LearnerStore store;
   final Exercise? exercise;
-  @override Widget build(BuildContext context) => Theme(data: academyTheme(store.dark), child: Scaffold(appBar: AppBar(title: Text(title, style: const TextStyle(fontSize: 16))), body: RunnerPanel(store:store, draftId:draftId, initial:initial, exercise:exercise, height:MediaQuery.sizeOf(context).height-90)));
+  @override Widget build(BuildContext context) => Theme(data: academyTheme(store.dark), child: Scaffold(appBar: AppBar(title: Text(title, style: const TextStyle(fontSize: 16))), body: LayoutBuilder(builder:(context,constraints)=>RunnerPanel(store:store, draftId:draftId, initial:initial, exercise:exercise, height:constraints.maxHeight, fullscreen:true))));
 }
 class ExerciseCard extends StatefulWidget {
   const ExerciseCard({super.key, required this.exercise, required this.store});

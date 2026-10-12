@@ -5,7 +5,10 @@ Responsive Flutter learner website and Android app. Learner interface only; cour
 ## Learner features
 - Expandable chapters with topics and breadcrumbs; 43 retained topic slots and embedded Python terminals.
 - Saved guest notes, code, input, attempts, revision queue and progress on the current device.
-- Python worker runner with input, traceback, stop/time/output limits, function harnesses and exact/normalized/numeric output comparisons.
+- Large Python workspace with fixed controls, independent desktop panes, mobile Code/Terminal tabs and full-screen mode.
+- Persistent Python shell with multiline blocks, expression output, saved command history and interactive top-level input(). Input inside synchronous functions and scripts uses the supplied input box.
+- Fresh workers for scripts/homework checks, traceback, stop/time/output limits, function harnesses and exact/normalized/numeric output comparisons.
+- Homework workspaces bind a unique activity ID to their own source, input values, expected output and comparison configuration. No questions have been added.
 - Empty lesson, classwork, homework, challenge, project and assessment areas.
 - Downloadable progress PDFs; new study records are locked while requirements are empty.
 - JSON backup and validated restore, Python-file import/download, saved workspace output.

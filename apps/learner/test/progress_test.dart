@@ -35,6 +35,18 @@ void main() {
     final written=const Exercise(id:'fixture-written',topic:'python-c0-t0',category:'Test',type:'written',title:'',prompt:'');expect(gradeAnswer(written,'save run explain')['status'],'review');expect(gradeAnswer(written,'save run explain')['passed'],false);
     final numeric=const Exercise(id:'fixture-short',topic:'python-c0-t0',category:'Test',type:'short',title:'',prompt:'',accepted:['8']);expect(gradeAnswer(numeric,' 8 ')['passed'],true);expect(gradeAnswer(numeric,'eight')['passed'],false);
   });
+  test('shell history stays separate between topic workspaces and survives backup', () async {
+    final store=LearnerStore(storage:MemoryStorage());await store.start();
+    store.edit(courseTopics[0].id,shellHistory:['value = 7','value']);
+    store.edit(courseTopics[1].id,shellHistory:['other = 2']);await store.pending;
+    final copy=LearnerStore(storage:MemoryStorage());await copy.start();await copy.restore(store.exportBackup());
+    expect(copy.draft(courseTopics[0].id)['shellHistory'],['value = 7','value']);
+    expect(copy.draft(courseTopics[1].id)['shellHistory'],['other = 2']);
+    final invalid=jsonDecode(store.exportBackup()) as Map<String,dynamic>;
+    invalid['drafts'][courseTopics[0].id]['shellHistory']=[42];
+    await expectLater(copy.restore(jsonEncode(invalid)),throwsFormatException);
+    store.dispose();copy.dispose();
+  });
   test('saved runtime evidence and explicitly empty code survive restore', () async {
     final store=LearnerStore(storage:MemoryStorage());await store.start();
     store.edit(starterTopics.first.id,code:'',lastRun:{'output':'Earlier output','error':'','prompts':<String>[],'code':'print("Earlier output")','recordedAt':DateTime.now().toIso8601String()});await store.pending;
@@ -46,4 +58,3 @@ void main() {
   });
 
 }
-

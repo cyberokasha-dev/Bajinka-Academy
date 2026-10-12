@@ -60,8 +60,8 @@ class LearnerStore extends ChangeNotifier {
     loading = false; changed();
   }
   Map<String, dynamic> draft(String id) => drafts[id] ?? {'notes': '', 'code': '', 'input': '', 'viewed': false, 'practised': false, 'reviewed': false};
-  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision, Map<String,dynamic>? lastRun}) {
-    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (code != null) 'codeEdited': true, if (lastRun != null) 'lastRun': lastRun, if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
+  void edit(String id, {String? notes, String? code, String? input, String? response, bool? helpUsed, String? revision, Map<String,dynamic>? lastRun, List<String>? shellHistory}) {
+    drafts[id] = {...draft(id), if (notes != null) 'notes': notes, if (code != null) 'code': code, if (code != null) 'codeEdited': true, if (lastRun != null) 'lastRun': lastRun, if (shellHistory != null) 'shellHistory': shellHistory.take(100).toList(), if (input != null) 'input': input, if (response != null) 'response': response, if (helpUsed != null) 'helpUsed': helpUsed, if (revision != null) 'editorRevision': revision, 'updatedAt': DateTime.now().toIso8601String()};
     unawaited(save());
   }
   Future<void> visit(String id) async {
@@ -145,6 +145,8 @@ class LearnerStore extends ChangeNotifier {
     for (final entry in (decoded['drafts'] as Map).entries) {
       if (!allowed.contains(entry.key) || entry.value is! Map) throw const FormatException('Unknown topic or invalid draft.');
       for (final field in ['notes','code','input','response','editorRevision']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! String) throw const FormatException('Draft text is invalid.'); }
+      final shellHistory = (entry.value as Map)['shellHistory'];
+      if (shellHistory != null && (shellHistory is! List || shellHistory.length > 100 || shellHistory.any((line) => line is! String))) throw const FormatException('Shell history is invalid.');
       final lastRun = (entry.value as Map)['lastRun'];
       if (lastRun != null && (lastRun is! Map || lastRun['output'] is! String || lastRun['error'] is! String || lastRun['code'] is! String || lastRun['recordedAt'] is! String || lastRun['prompts'] is! List || (lastRun['prompts'] as List).any((p) => p is! String))) throw const FormatException('Saved run details are invalid.');
       for (final field in ['viewed','practised','reviewed','helpUsed','codeEdited']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! bool) throw const FormatException('Draft progress is invalid.'); }
