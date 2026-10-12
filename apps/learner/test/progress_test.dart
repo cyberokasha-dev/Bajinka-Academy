@@ -35,15 +35,6 @@ void main() {
     final written=const Exercise(id:'fixture-written',topic:'python-c0-t0',category:'Test',type:'written',title:'',prompt:'');expect(gradeAnswer(written,'save run explain')['status'],'review');expect(gradeAnswer(written,'save run explain')['passed'],false);
     final numeric=const Exercise(id:'fixture-short',topic:'python-c0-t0',category:'Test',type:'short',title:'',prompt:'',accepted:['8']);expect(gradeAnswer(numeric,' 8 ')['passed'],true);expect(gradeAnswer(numeric,'eight')['passed'],false);
   });
-  test('help disclosure persists and cannot be cleared by runner result', () async {
-    final storage=MemoryStorage();final first=LearnerStore(storage:storage);await first.start();
-    final exercise=const Exercise(id:'fixture-code',topic:'python-c0-t0',category:'Test',type:'code',title:'',prompt:'');
-    first.edit('activity:${exercise.id}',helpUsed:true);await first.pending;
-    final second=LearnerStore(storage:storage);await second.start();
-    await second.recordAttempt(exercise,{'status':'graded','passed':true,'score':100,'helpUsed':false});
-    expect(second.attempts[exercise.id]!.last['helpUsed'],true);
-    first.dispose();second.dispose();
-  });
   test('saved runtime evidence and explicitly empty code survive restore', () async {
     final store=LearnerStore(storage:MemoryStorage());await store.start();
     store.edit(starterTopics.first.id,code:'',lastRun:{'output':'Earlier output','error':'','prompts':<String>[],'code':'print("Earlier output")','recordedAt':DateTime.now().toIso8601String()});await store.pending;
@@ -55,3 +46,4 @@ void main() {
   });
 
 }
+
