@@ -21,13 +21,21 @@ void main() {
     tester.view.physicalSize=const Size(390,844);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();expect(tester.takeException(),isNull);
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
-  testWidgets('assessment keeps its section without questions', (tester) async {
+  testWidgets('assessment lists the fourteen published topic banks', (tester) async {
     await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Open navigation menu'));await tester.pumpAndSettle();
     await tester.tap(find.text('Assessments'));await tester.pumpAndSettle();
     expect(find.byType(TextFormField),findsNothing);
-    expect(find.text('No assessments published'),findsOneWidget);
+    expect(find.text('Topic knowledge checks'),findsOneWidget);expect(find.text('Comparisons and Boolean values'),findsOneWidget);
     expect(tester.takeException(),isNull);
   }, variant:TargetPlatformVariant({TargetPlatform.linux}));
+  testWidgets('a published topic opens its own homework and assessment tabs', (tester) async {
+    await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Resume your last topic →'));await tester.tap(find.text('Resume your last topic →'));await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Homework'));await tester.tap(find.text('Homework'));await tester.pumpAndSettle();
+    expect(find.text('Environment greeting'),findsOneWidget);expect(find.text('Three configuration values'),findsNothing);
+    await tester.ensureVisible(find.text('Assessment'));await tester.tap(find.text('Assessment'));await tester.pumpAndSettle();
+    expect(find.text('Source-file convention'),findsOneWidget);expect(find.text('Closing a shell'),findsOneWidget);expect(tester.takeException(),isNull);
+  },variant:TargetPlatformVariant({TargetPlatform.linux}));
 
 }

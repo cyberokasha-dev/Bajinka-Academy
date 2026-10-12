@@ -16,11 +16,20 @@ class SlowCloud implements DeviceStorage {
   @override Future<void> write(String key,String value) async {writes.add(value);if(writes.length==1)await release.future;}
 }
 void main() {
-  test('empty curriculum cannot award completion or a new record', () async {
+  test('two chapters publish independent activities without unlocking a course record', () async {
     final store = LearnerStore(storage:MemoryStorage());await store.start();
-    expect(courseTopics.length,43);expect(courseTopics.every((t)=>!t.ready && t.goal.isEmpty && t.example.isEmpty && t.output.isEmpty),true);expect(exercises,isEmpty);
+    expect(courseTopics.length,43);expect(courseTopics.where((t)=>t.ready).length,14);expect(courseTopics.where((t)=>t.chapter>1).every((t)=>!t.ready),true);expect(exercises.length,112);expect(exercises.map((e)=>e.id).toSet().length,112);expect(exercises.where((e)=>e.type=='code').every((e)=>e.tests.isNotEmpty),true);
     await store.setReview('opening-project',true);await store.recordAssessment(100,{});await store.preferences(displayName:'Learner');
-    expect(store.requiredCount,0);expect(store.progress,0);expect(store.openingRecordEligible,false);await expectLater(store.issueOpeningRecord(),throwsFormatException);store.dispose();
+    expect(store.requiredCount,14);expect(store.progress,0);expect(store.openingRecordEligible,false);await expectLater(store.issueOpeningRecord(),throwsFormatException);store.dispose();
+  });
+  test('homework code and marking remain tied to their own activity IDs', () async {
+    final storage=MemoryStorage();final store=LearnerStore(storage:storage);await store.start();
+    final homework=exercises.where((e)=>e.category=='Homework').toList();final a=homework[0],b=homework[1];
+    store.edit('activity:${a.id}',code:'my first answer');store.edit('activity:${b.id}',code:'my second answer');await store.pending;
+    await store.recordAttempt(a,{'status':'graded','passed':true,'score':100},answer:'my first answer');
+    expect(store.passed(a.id),true);expect(store.passed(b.id),false);
+    final copy=LearnerStore(storage:storage);await copy.start();expect(copy.draft('activity:${a.id}')['code'],'my first answer');expect(copy.draft('activity:${b.id}')['code'],'my second answer');
+    expect(b.tests,isNot(equals(a.tests)));store.dispose();copy.dispose();
   });
   test('guest notes and code persist across a fresh store', () async {
     final storage = MemoryStorage(); final first = LearnerStore(storage:storage); await first.start();

@@ -1,0 +1,1342 @@
+{
+  "lessons": [
+    {
+      "id": "python-c0-t0",
+      "example": "print(\"Terminal is active!\")",
+      "output": "Terminal is active!"
+    },
+    {
+      "id": "python-c0-t1",
+      "example": "# A mock status banner\nprint(\"System Initialized\")\nprint(\"Connection secure.\")",
+      "output": "System Initialized\nConnection secure."
+    },
+    {
+      "id": "python-c0-t2",
+      "example": "port = 8080\nprevious = port\nport = 8443\nprint(port)\nprint(previous)",
+      "output": "8443\n8080"
+    },
+    {
+      "id": "python-c0-t3",
+      "example": "raw = input(\"Server label: \")\nclean = raw.strip().upper()\nprint(\"Received target:\", clean)",
+      "output": "With input \"  academy  \": Received target: ACADEMY"
+    },
+    {
+      "id": "python-c0-t4",
+      "example": "raw = \"500\"\nnumber = int(raw)\nprint(type(raw))\nprint(type(number))\nprint(number * 2)",
+      "output": "<class 'str'>\n<class 'int'>\n1000"
+    },
+    {
+      "id": "python-c0-t5",
+      "example": "total_packets = 105\ndropped_packets = 5\nsuccess_rate = (total_packets - dropped_packets) / total_packets * 100\nprint(f\"Network Health: {success_rate:.2f}% operational\")",
+      "output": "Network Health: 95.24% operational"
+    },
+    {
+      "id": "python-c0-t6",
+      "example": "def log_alert(level, message):\n    print(f\"[{level.upper()}] {message}\")\n\nlog_alert(\"warn\", \"Mock login failure\")",
+      "output": "[WARN] Mock login failure"
+    },
+    {
+      "id": "python-c0-t7",
+      "example": "def calculate_score(base, multiplier):\n    return base * multiplier\n\nfinal_score = calculate_score(10, 5)\nprint(final_score)",
+      "output": "50"
+    },
+    {
+      "id": "python-c1-t0",
+      "example": "age = 18\nprint(age >= 18)\nprint(age == 18)\nprint(age > 18)",
+      "output": "True\nTrue\nFalse"
+    },
+    {
+      "id": "python-c1-t1",
+      "example": "score = 65\nif score >= 80:\n    print(\"High\")\nelif score >= 50:\n    print(\"Pass\")\nelse:\n    print(\"Review\")",
+      "output": "Pass"
+    },
+    {
+      "id": "python-c1-t2",
+      "example": "has_badge = True\nis_suspended = False\nprint(has_badge and not is_suspended)\nprint(False or True)",
+      "output": "True\nTrue"
+    },
+    {
+      "id": "python-c1-t3",
+      "example": "count = 20\ncapacity = 20\nif count < 0 or count > capacity:\n    print(\"Invalid\")\nelif count == capacity:\n    print(\"Full\")\nelse:\n    print(\"Available\")",
+      "output": "Full"
+    },
+    {
+      "id": "python-c1-t4",
+      "example": "authenticated = True\nrole = \"reviewer\"\nif authenticated:\n    if role == \"admin\":\n        print(\"Admin\")\n    else:\n        print(\"Member\")\nelse:\n    print(\"Sign in\")",
+      "output": "Member"
+    },
+    {
+      "id": "python-c1-t5",
+      "example": "command = \"status\"\nmatch command:\n    case \"status\":\n        print(\"Show status\")\n    case \"help\":\n        print(\"Show help\")\n    case _:\n        print(\"Unknown\")",
+      "output": "Show status"
+    }
+  ],
+  "activities": [
+    {
+      "id": "python-c0-t0-classwork-1-v1",
+      "topic": "python-c0-t0",
+      "reference": "print(\"Terminal is active!\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Terminal is active!",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t0-homework-2-v1",
+      "topic": "python-c0-t0",
+      "reference": "print(\"Automation environment online.\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Automation environment online.",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t0-project-4-v1",
+      "topic": "python-c0-t0",
+      "reference": "print(\"Log Recon Utility ready.\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Log Recon Utility ready.",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t1-classwork-1-v1",
+      "topic": "python-c0-t1",
+      "reference": "# Mock status\nprint(\"System Initialized\")\nprint(\"Connection secure.\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "System Initialized\nConnection secure.",
+          "harness": "import tokenize,io\nassert any(t.type==tokenize.COMMENT for t in tokenize.generate_tokens(io.StringIO(_academy_source).readline)), 'Include an explanatory source comment.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t1-homework-2-v1",
+      "topic": "python-c0-t1",
+      "reference": "# Mock security tool\nprint(\"MOCK SECURITY TOOL\")\nprint(\"[INFO] Firewall checks active...\\nReady\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "MOCK SECURITY TOOL\n[INFO] Firewall checks active...\nReady",
+          "harness": "import tokenize,io\ntokens=list(tokenize.generate_tokens(io.StringIO(_academy_source).readline))\nassert any(t.type==tokenize.COMMENT for t in tokens), 'Include a project header comment.'\nassert any(t.type==tokenize.STRING and '\\\\n' in t.string for t in tokens), 'Use a newline escape in a string.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t1-challenge-3-v1",
+      "topic": "python-c0-t1",
+      "reference": "print('Access denied: \"root\" user blocked')",
+      "alternatives": [
+        "print(\"Access denied: \\\"root\\\" user blocked\")"
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Access denied: \"root\" user blocked",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t1-project-4-v1",
+      "topic": "python-c0-t1",
+      "reference": "# Demonstration only\nprint(\"=== Log Recon Utility ===\")\nprint(\"Mock data only.\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "=== Log Recon Utility ===\nMock data only.",
+          "harness": "import io,tokenize\nassert any(t.type==tokenize.COMMENT for t in tokenize.generate_tokens(io.StringIO(_academy_source).readline)), 'Include a useful source comment.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t2-classwork-1-v1",
+      "topic": "python-c0-t2",
+      "reference": "target_host=\"192.168.1.100\"\nport=8080\nprint(target_host)\nprint(port)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "192.168.1.100\n8080",
+          "harness": "assert globals().get('target_host')=='192.168.1.100' and type(globals().get('port')) is int and port==8080, 'Assign the requested configuration variables.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t2-homework-2-v1",
+      "topic": "python-c0-t2",
+      "reference": "server_name=\"academy\"\ntimeout_limit=30\nis_active=True\nprint(\"Server:\",server_name)\nprint(\"Timeout:\",timeout_limit)\nprint(\"Active:\",is_active)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Server: academy\nTimeout: 30\nActive: True",
+          "harness": "assert globals().get('server_name')=='academy', 'Set server_name.'\nassert type(globals().get('timeout_limit')) is int and timeout_limit==30, 'Use an integer timeout_limit.'\nassert globals().get('is_active') is True, 'Use Boolean True for is_active.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t2-project-4-v1",
+      "topic": "python-c0-t2",
+      "reference": "log_path=\"mock.log\"\nalert_threshold=5\nscan_active=False\nprint(\"Log:\",log_path)\nprint(\"Threshold:\",alert_threshold)\nprint(\"Active:\",scan_active)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Log: mock.log\nThreshold: 5\nActive: False",
+          "harness": "assert globals().get('log_path')=='mock.log' and globals().get('alert_threshold')==5 and globals().get('scan_active') is False, 'Define the requested configuration.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t3-classwork-1-v1",
+      "topic": "python-c0-t3",
+      "reference": "text=input()\nprint(\"Received target:\",text.strip().upper())",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "  academy  "
+          ],
+          "expected": "Received target: ACADEMY",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "East Hall"
+          ],
+          "expected": "Received target: EAST HALL",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t3-homework-2-v1",
+      "topic": "python-c0-t3",
+      "reference": "text=input().strip().lower()\nprint(text)\nprint(len(text))",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "   LOGIN_FAIL   "
+          ],
+          "expected": "login_fail\n10",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "  Two Words "
+          ],
+          "expected": "two words\n9",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "   "
+          ],
+          "expected": "\n0",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t3-project-4-v1",
+      "topic": "python-c0-t3",
+      "reference": "target=input().strip().lower()\nprint(\"Target:\",target)\nprint(\"Mock data only.\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "  EXAMPLE.ORG "
+          ],
+          "expected": "Target: example.org\nMock data only.",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "DEMO.LOCAL"
+          ],
+          "expected": "Target: demo.local\nMock data only.",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t4-classwork-1-v1",
+      "topic": "python-c0-t4",
+      "reference": "raw_val=\"500\"\nnum_val=int(raw_val)\nprint(num_val*2)\nprint(type(num_val).__name__)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "1000\nint",
+          "harness": "assert type(globals().get('raw_val')) is str and type(globals().get('num_val')) is int, 'Retain the text and converted integer variables.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t4-homework-2-v1",
+      "topic": "python-c0-t4",
+      "reference": "first=int(input())\nsecond=int(input())\nprint(first+second)\nprint(\"int\")\nprint(\"int\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "6",
+            "4"
+          ],
+          "expected": "10\nint\nint",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "-8",
+            "3"
+          ],
+          "expected": "-5\nint\nint",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0",
+            "0"
+          ],
+          "expected": "0\nint\nint",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t4-project-4-v1",
+      "topic": "python-c0-t4",
+      "reference": "threshold=int(input())\nprint(\"Threshold:\",threshold)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "5"
+          ],
+          "expected": "Threshold: 5",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0"
+          ],
+          "expected": "Threshold: 0",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "-2"
+          ],
+          "expected": "Threshold: -2",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t5-classwork-1-v1",
+      "topic": "python-c0-t5",
+      "reference": "total=int(input())\ndropped=int(input())\nrate=(total-dropped)/total*100\nprint(f\"Network Health: {rate:.2f}% operational\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "105",
+            "5"
+          ],
+          "expected": "Network Health: 95.24% operational",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "4",
+            "0"
+          ],
+          "expected": "Network Health: 100.00% operational",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "4",
+            "4"
+          ],
+          "expected": "Network Health: 0.00% operational",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t5-homework-2-v1",
+      "topic": "python-c0-t5",
+      "reference": "total=int(input())\nfailed=int(input())\nprint(f\"Failure rate: {failed/total*100:.2f}%\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "80",
+            "10"
+          ],
+          "expected": "Failure rate: 12.50%",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "3",
+            "1"
+          ],
+          "expected": "Failure rate: 33.33%",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "10",
+            "0"
+          ],
+          "expected": "Failure rate: 0.00%",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "10",
+            "10"
+          ],
+          "expected": "Failure rate: 100.00%",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t5-project-4-v1",
+      "topic": "python-c0-t5",
+      "reference": "total=int(input())\nfailed=int(input())\nprint(f\"Total: {total}\")\nprint(f\"Failed: {failed}\")\nprint(f\"Failure rate: {failed/total*100:.2f}%\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "20",
+            "3"
+          ],
+          "expected": "Total: 20\nFailed: 3\nFailure rate: 15.00%",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "4",
+            "0"
+          ],
+          "expected": "Total: 4\nFailed: 0\nFailure rate: 0.00%",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t6-classwork-1-v1",
+      "topic": "python-c0-t6",
+      "reference": "def log_alert(level,message):\n    print(f\"[{level.upper()}] {message}\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "[WARN] Mock login failure",
+          "harness": "log_alert('warn','Mock login failure')",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "[INFO] Ready",
+          "harness": "log_alert('info','Ready')",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t6-homework-2-v1",
+      "topic": "python-c0-t6",
+      "reference": "def report_port(port_num):\n    print(\"Port:\",port_num)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Port: 80",
+          "harness": "report_port(80)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Port: 443",
+          "harness": "report_port(443)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Port: 8080",
+          "harness": "report_port(8080)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t6-project-4-v1",
+      "topic": "python-c0-t6",
+      "reference": "def show_banner(name):\n    print(f\"=== {name} ===\")\n    print(\"Mock data only.\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "=== Log Recon Utility ===\nMock data only.",
+          "harness": "show_banner('Log Recon Utility')",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "=== Practice Tool ===\nMock data only.",
+          "harness": "show_banner('Practice Tool')",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t7-classwork-1-v1",
+      "topic": "python-c0-t7",
+      "reference": "def calculate_score(base,multiplier):\n    return base*multiplier",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "50",
+          "harness": "result=calculate_score(10,5)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "-6",
+          "harness": "result=calculate_score(-2,3)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "0",
+          "harness": "result=calculate_score(0,9)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t7-homework-2-v1",
+      "topic": "python-c0-t7",
+      "reference": "def average(first,second):\n    return (first+second)/2",
+      "alternatives": [
+        "def average(first,second):\n    return first/2+second/2"
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "6",
+          "harness": "result=average(4,8)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "-1",
+          "harness": "result=average(-4,2)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "2.5",
+          "harness": "result=average(1,4)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c0-t7-project-4-v1",
+      "topic": "python-c0-t7",
+      "reference": "def failure_percent(total,failed):\n    return failed/total*100\ndef main():\n    target=input().strip().lower()\n    total=int(input())\n    failed=int(input())\n    print(f\"Target: {target}\")\n    print(f\"Total: {total}\")\n    print(f\"Failed: {failed}\")\n    print(f\"Failure rate: {failure_percent(total,failed):.2f}%\")\nif __name__ == \"__main__\":\n    main()",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "  EXAMPLE.ORG ",
+            "20",
+            "3"
+          ],
+          "expected": "Target: example.org\nTotal: 20\nFailed: 3\nFailure rate: 15.00%",
+          "harness": "import ast,math\nassert callable(globals().get('failure_percent')), 'Define failure_percent(total, failed).'\nassert math.isclose(failure_percent(4,1),25), 'Return the calculated percentage.'\nassert callable(globals().get('main')), 'Define main().'\ntree=ast.parse(_academy_source)\ndef guard(node):\n    if not isinstance(node,ast.If) or not isinstance(node.test,ast.Compare) or len(node.test.ops)!=1 or not isinstance(node.test.ops[0],ast.Eq):\n        return False\n    values=[node.test.left,*node.test.comparators]\n    return any(isinstance(v,ast.Name) and v.id=='__name__' for v in values) and any(isinstance(v,ast.Constant) and v.value=='__main__' for v in values)\nassert any(guard(n) for n in tree.body), 'Use the standard main guard.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "DEMO",
+            "4",
+            "0"
+          ],
+          "expected": "Target: demo\nTotal: 4\nFailed: 0\nFailure rate: 0.00%",
+          "harness": "import ast,math\nassert callable(globals().get('failure_percent')), 'Define failure_percent(total, failed).'\nassert math.isclose(failure_percent(4,1),25), 'Return the calculated percentage.'\nassert callable(globals().get('main')), 'Define main().'\ntree=ast.parse(_academy_source)\ndef guard(node):\n    if not isinstance(node,ast.If) or not isinstance(node.test,ast.Compare) or len(node.test.ops)!=1 or not isinstance(node.test.ops[0],ast.Eq):\n        return False\n    values=[node.test.left,*node.test.comparators]\n    return any(isinstance(v,ast.Name) and v.id=='__name__' for v in values) and any(isinstance(v,ast.Constant) and v.value=='__main__' for v in values)\nassert any(guard(n) for n in tree.body), 'Use the standard main guard.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "mock",
+            "3",
+            "1"
+          ],
+          "expected": "Target: mock\nTotal: 3\nFailed: 1\nFailure rate: 33.33%",
+          "harness": "import ast,math\nassert callable(globals().get('failure_percent')), 'Define failure_percent(total, failed).'\nassert math.isclose(failure_percent(4,1),25), 'Return the calculated percentage.'\nassert callable(globals().get('main')), 'Define main().'\ntree=ast.parse(_academy_source)\ndef guard(node):\n    if not isinstance(node,ast.If) or not isinstance(node.test,ast.Compare) or len(node.test.ops)!=1 or not isinstance(node.test.ops[0],ast.Eq):\n        return False\n    values=[node.test.left,*node.test.comparators]\n    return any(isinstance(v,ast.Name) and v.id=='__name__' for v in values) and any(isinstance(v,ast.Constant) and v.value=='__main__' for v in values)\nassert any(guard(n) for n in tree.body), 'Use the standard main guard.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t0-classwork-1-v1",
+      "topic": "python-c1-t0",
+      "reference": "a=int(input())\nb=int(input())\nprint(a>=b)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "5",
+            "5"
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "4",
+            "5"
+          ],
+          "expected": "False",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "12",
+            "3"
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "-2",
+            "-3"
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t0-homework-2-v1",
+      "topic": "python-c1-t0",
+      "reference": "def eligible(age):\n    return age>=18",
+      "alternatives": [
+        "def eligible(age):\n    return not age < 18"
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=eligible(17)\nassert type(result) is bool, 'Return a Boolean, not text.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=eligible(18)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=eligible(30)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=eligible(0)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t0-project-4-v1",
+      "topic": "python-c1-t0",
+      "reference": "def threshold_reached(count,threshold):\n    return count>=threshold",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=threshold_reached(4,5)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=threshold_reached(5,5)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=threshold_reached(10,5)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t1-classwork-1-v1",
+      "topic": "python-c1-t1",
+      "reference": "temperature=int(input())\nif temperature>=20:\n    print(\"Warm\")\nelse:\n    print(\"Cool\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "19"
+          ],
+          "expected": "Cool",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "20"
+          ],
+          "expected": "Warm",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "35"
+          ],
+          "expected": "Warm",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "-5"
+          ],
+          "expected": "Cool",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t1-homework-2-v1",
+      "topic": "python-c1-t1",
+      "reference": "def band(score):\n    if score>=80:\n        return \"High\"\n    elif score>=50:\n        return \"Pass\"\n    else:\n        return \"Review\"",
+      "alternatives": [
+        "def band(score):\n    if score < 50:\n        return \"Review\"\n    if score < 80:\n        return \"Pass\"\n    return \"High\""
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Review",
+          "harness": "print(band(49))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Pass",
+          "harness": "print(band(50))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Pass",
+          "harness": "print(band(79))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "High",
+          "harness": "print(band(80))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "High",
+          "harness": "print(band(100))",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t1-project-4-v1",
+      "topic": "python-c1-t1",
+      "reference": "def alert_level(failures):\n    if failures>=10:\n        return \"Alert\"\n    elif failures>=5:\n        return \"Watch\"\n    return \"Normal\"",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Normal",
+          "harness": "print(alert_level(0))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Normal",
+          "harness": "print(alert_level(4))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Watch",
+          "harness": "print(alert_level(5))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Watch",
+          "harness": "print(alert_level(9))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Alert",
+          "harness": "print(alert_level(10))",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t2-classwork-1-v1",
+      "topic": "python-c1-t2",
+      "reference": "count=int(input())\nprint(1<=count<=3)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "0"
+          ],
+          "expected": "False",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "1"
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "3"
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "4"
+          ],
+          "expected": "False",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t2-homework-2-v1",
+      "topic": "python-c1-t2",
+      "reference": "def can_enter(has_badge,is_suspended):\n    return has_badge and not is_suspended",
+      "alternatives": [
+        "def can_enter(has_badge,is_suspended):\n    if is_suspended:\n        return False\n    return has_badge"
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=can_enter(True,False)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_enter(True,True)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_enter(False,False)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_enter(False,True)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t2-project-4-v1",
+      "topic": "python-c1-t2",
+      "reference": "def approved(is_owner,has_permission):\n    return is_owner or has_permission",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=approved(False,False)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=approved(True,False)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=approved(False,True)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=approved(True,True)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t3-classwork-1-v1",
+      "topic": "python-c1-t3",
+      "reference": "def capacity_label(count):\n    if count<0 or count>20:\n        return \"Invalid\"\n    if count==20:\n        return \"Full\"\n    return \"Available\"",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Invalid",
+          "harness": "print(capacity_label(-1))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Available",
+          "harness": "print(capacity_label(0))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Available",
+          "harness": "print(capacity_label(19))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Full",
+          "harness": "print(capacity_label(20))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Invalid",
+          "harness": "print(capacity_label(21))",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t3-homework-2-v1",
+      "topic": "python-c1-t3",
+      "reference": "def safe_failure_percent(total,failed):\n    if total==0:\n        return 0.0\n    return failed/total*100",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "0",
+          "harness": "result=safe_failure_percent(0,0)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "25",
+          "harness": "result=safe_failure_percent(4,1)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "100",
+          "harness": "result=safe_failure_percent(7,7)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "expected": "0",
+          "harness": "result=safe_failure_percent(7,0)\nassert type(result) in (int,float), 'Return a numeric value, not text.'\nprint(result)",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t3-project-4-v1",
+      "topic": "python-c1-t3",
+      "reference": "def valid_counts(total,failed):\n    return total>=0 and 0<=failed<=total",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=valid_counts(0,0)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=valid_counts(-1,0)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=valid_counts(5,-1)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=valid_counts(5,6)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=valid_counts(5,5)\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t4-classwork-1-v1",
+      "topic": "python-c1-t4",
+      "reference": "def access_label(authenticated,role):\n    if not authenticated:\n        return \"Sign in\"\n    if role==\"admin\":\n        return \"Admin\"\n    return \"Member\"",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Sign in",
+          "harness": "print(access_label(False,'admin'))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Admin",
+          "harness": "print(access_label(True,'admin'))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Member",
+          "harness": "print(access_label(True,'reviewer'))",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t4-homework-2-v1",
+      "topic": "python-c1-t4",
+      "reference": "def can_download(authenticated,is_suspended,role):\n    return authenticated and not is_suspended and (role==\"owner\" or role==\"reviewer\")",
+      "alternatives": [
+        "def can_download(authenticated,is_suspended,role):\n    if not authenticated or is_suspended:\n        return False\n    return role in (\"owner\",\"reviewer\")"
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=can_download(True,False,'owner')\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "True",
+          "harness": "result=can_download(True,False,'reviewer')\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_download(False,False,'owner')\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_download(True,True,'reviewer')\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_download(True,False,'guest')\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "False",
+          "harness": "result=can_download(True,False,'Owner')\nassert type(result) is bool, 'Return a Boolean value.'\nprint(result)",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t4-project-4-v1",
+      "topic": "python-c1-t4",
+      "reference": "def guarded_alert(valid,failures):\n    if not valid:\n        return \"Invalid\"\n    if failures>=10:\n        return \"Alert\"\n    if failures>=5:\n        return \"Watch\"\n    return \"Normal\"",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Invalid",
+          "harness": "print(guarded_alert(False,10))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Alert",
+          "harness": "print(guarded_alert(True,10))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Watch",
+          "harness": "print(guarded_alert(True,5))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Normal",
+          "harness": "print(guarded_alert(True,4))",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t5-classwork-1-v1",
+      "topic": "python-c1-t5",
+      "reference": "text=input().strip()\nprint(bool(text))",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "   "
+          ],
+          "expected": "False",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "False"
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "  ready  "
+          ],
+          "expected": "True",
+          "harness": "",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t5-homework-2-v1",
+      "topic": "python-c1-t5",
+      "reference": "def command_action(command):\n    match command:\n        case \"status\":\n            return \"Show status\"\n        case \"help\":\n            return \"Show help\"\n        case _:\n            return \"Unknown\"",
+      "alternatives": [
+        "def command_action(command):\n    if command==\"status\":\n        return \"Show status\"\n    if command==\"help\":\n        return \"Show help\"\n    return \"Unknown\""
+      ],
+      "tests": [
+        {
+          "input": [],
+          "expected": "Show status",
+          "harness": "print(command_action('status'))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Show help",
+          "harness": "print(command_action('help'))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Unknown",
+          "harness": "print(command_action('restart'))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Unknown",
+          "harness": "print(command_action('STATUS'))",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "expected": "Unknown",
+          "harness": "print(command_action(''))",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c1-t5-project-4-v1",
+      "topic": "python-c1-t5",
+      "reference": "def report(target,total,failed):\n    target=target.strip().lower()\n    if not target or total<0 or failed<0 or failed>total:\n        return \"Invalid\"\n    rate=0 if total==0 else failed/total*100\n    if failed>=10:\n        level=\"Alert\"\n    elif failed>=5:\n        level=\"Watch\"\n    else:\n        level=\"Normal\"\n    return f\"Target: {target}\\nFailure rate: {rate:.2f}%\\nLevel: {level}\"\ntarget=input()\ntotal=int(input())\nfailed=int(input())\nprint(report(target,total,failed))",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            " EXAMPLE.ORG ",
+            "20",
+            "3"
+          ],
+          "expected": "Target: example.org\nFailure rate: 15.00%\nLevel: Normal",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            " DEMO ",
+            "10",
+            "5"
+          ],
+          "expected": "Target: demo\nFailure rate: 50.00%\nLevel: Watch",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "mock",
+            "10",
+            "10"
+          ],
+          "expected": "Target: mock\nFailure rate: 100.00%\nLevel: Alert",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "mock",
+            "0",
+            "0"
+          ],
+          "expected": "Target: mock\nFailure rate: 0.00%\nLevel: Normal",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "  ",
+            "5",
+            "1"
+          ],
+          "expected": "Invalid",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "mock",
+            "5",
+            "6"
+          ],
+          "expected": "Invalid",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "mock",
+            "-1",
+            "0"
+          ],
+          "expected": "Invalid",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "mock",
+            "5",
+            "-1"
+          ],
+          "expected": "Invalid",
+          "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        }
+      ]
+    }
+  ]
+}

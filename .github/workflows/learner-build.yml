@@ -39,6 +39,8 @@ jobs:
       - run: flutter test
       - name: Check runner comparison rules
         run: node ../../scripts/test_learner_runner.cjs
+      - name: Check published chapter content
+        run: python ../../scripts/test_chapter_content.py
       - name: Check persistent Python shell
         run: python ../../scripts/test_shell_worker.py
       - name: Check worker execution wrapper
