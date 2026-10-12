@@ -31,6 +31,25 @@ void main() {
     final copy=LearnerStore(storage:storage);await copy.start();expect(copy.draft('activity:${a.id}')['code'],'my first answer');expect(copy.draft('activity:${b.id}')['code'],'my second answer');
     expect(b.tests,isNot(equals(a.tests)));store.dispose();copy.dispose();
   });
+  test('saved app files use topic/activity names and restore without mixing workspaces', () async {
+    final store=LearnerStore(storage:MemoryStorage());await store.start();
+    final home=exercises.firstWhere((e)=>e.category=='Homework');final project=exercises.firstWhere((e)=>e.category=='Project');
+    await store.saveFile('activity:${home.id}',topicId:home.topic,category:home.category,title:home.title,content:'homework code');
+    await store.saveFile('activity:${project.id}',topicId:project.topic,category:project.category,title:project.title,content:'project code');
+    expect(store.files['activity:${home.id}']!['filename'],contains('running-and-saving-python-programs-homework'));
+    expect(store.files['activity:${project.id}']!['filename'],contains('project'));expect(store.files.length,2);
+    final copy=LearnerStore(storage:MemoryStorage());await copy.start();await copy.restore(store.exportBackup());
+    expect(copy.files['activity:${home.id}']!['content'],'homework code');expect(copy.files['activity:${project.id}']!['content'],'project code');
+    final older=store.snapshot()..remove('files');LearnerStore.validateBackup(jsonEncode(older));
+    store.dispose();copy.dispose();
+  });
+  test('automatic checks mark only the matching task and award points once', () async {
+    expect(exercises.any((e)=>e.type=='written'),false);
+    final short=exercises.firstWhere((e)=>e.type=='short');final store=LearnerStore(storage:MemoryStorage());await store.start();
+    final accepted=short.accepted.first;expect(gradeAnswer(short,accepted.toUpperCase())['passed'],true);expect(gradeAnswer(short,'unrelated answer')['passed'],false);
+    await store.recordAttempt(short,gradeAnswer(short,accepted));await store.recordAttempt(short,gradeAnswer(short,accepted));
+    expect(store.passed(short.id),true);expect(store.points,10);expect(store.completedCount,0);store.dispose();
+  });
   test('guest notes and code persist across a fresh store', () async {
     final storage = MemoryStorage(); final first = LearnerStore(storage:storage); await first.start();
     first.edit(starterTopics.first.id, notes:'A private explanation',code:'print(42)',input:'test'); await first.pending;

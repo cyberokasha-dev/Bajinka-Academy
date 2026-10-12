@@ -37,6 +37,8 @@ jobs:
           if-no-files-found: error
       - run: flutter analyze
       - run: flutter test
+      - name: Check workspace save and marking actions
+        run: node ../../scripts/test_workspace_actions.cjs
       - name: Check runner comparison rules
         run: node ../../scripts/test_learner_runner.cjs
       - name: Check published chapter content

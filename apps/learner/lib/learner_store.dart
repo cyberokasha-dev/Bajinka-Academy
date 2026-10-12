@@ -24,6 +24,8 @@ class LearnerStore extends ChangeNotifier {
   final DeviceStorage storage;
   static const key = 'academy.guest.v4';
   final drafts = <String, Map<String, dynamic>>{};
+  final files = <String, Map<String, dynamic>>{};
+  final savedFileAcks = <String,String>{};
   final attempts = <String, List<Map<String, dynamic>>>{};
   final weak = <String>{};
   final reviews = <String, bool>{};
@@ -103,6 +105,13 @@ class LearnerStore extends ChangeNotifier {
     return pending;
   }
   Future<void> reloadCloud() async {await pending;await start();saveFailed=loadFailed;conflict=false;if(!loadFailed){for(final id in drafts.keys.toList()){drafts[id]={...drafts[id]!, 'editorRevision':'reload-${DateTime.now().microsecondsSinceEpoch}'};}}changed();}
+  Future<void> saveFile(String workspaceId, {required String topicId, required String category, required String title, required String content, String input='', bool code=true}) async {
+    final topic=topicById(topicId);
+    files[workspaceId]={'workspaceId':workspaceId,'topic':topicId,'category':category,'title':title,'filename':workspaceFilename(topic,category,activity:title,code:code),'content':content,'input':input,'kind':code?'code':'answer','savedAt':DateTime.now().toIso8601String()};
+    await save();
+    if(saveFailed)throw const FormatException('File is not saved to Supabase yet. Keep the workspace open and retry.');
+    savedFileAcks[workspaceId]=files[workspaceId]!['savedAt'] as String;changed();
+  }
   Future<void> recordAttempt(Exercise exercise, Map<String, dynamic> result, {String answer = '', bool helpUsed = false}) async {
     final record = <String, dynamic>{'id': '${DateTime.now().microsecondsSinceEpoch}', 'exercise': exercise.id, 'topic': exercise.topic, 'version': 1, 'submittedAt': DateTime.now().toIso8601String(), 'answer': answer, ...result, 'helpUsed': helpUsed || draft('activity:${exercise.id}')['helpUsed'] == true};
     final history = attempts.putIfAbsent(exercise.id, () => []);
@@ -139,7 +148,7 @@ class LearnerStore extends ChangeNotifier {
     final record = <String,dynamic>{'kind':'opening-study-record','id':'BAJINKA-C0-${now.microsecondsSinceEpoch}','name':name.trim(),'issuedAt':now.toIso8601String(),'startedAt':startedAt,'completed':completedCount,'required':requiredCount,'assessment':assessmentBest,'projectReviewed':true};
     certificates.add(record); await save(); return Map<String,dynamic>.from(record);
   }
-  Map<String, dynamic> snapshot() => {'format':'bajinka-device-backup','version':1,'name':name,'lastTopic':lastTopic,'startedAt':startedAt,'dark':dark,'textScale':textScale,'reminders':reminders,'drafts':drafts,'attempts':attempts,'weak':weak.toList(),'reviews':reviews,'certificates':certificates};
+  Map<String, dynamic> snapshot() => {'format':'bajinka-device-backup','version':1,'name':name,'lastTopic':lastTopic,'startedAt':startedAt,'dark':dark,'textScale':textScale,'reminders':reminders,'drafts':drafts,'attempts':attempts,'weak':weak.toList(),'reviews':reviews,'certificates':certificates,'files':files};
   String exportBackup() => const JsonEncoder.withIndent('  ').convert(snapshot());
   static Map<String, dynamic> validateBackup(String raw) {
     if (utf8.encode(raw).length > 5000000) throw const FormatException('Backup exceeds 5 MB.');
@@ -160,6 +169,14 @@ class LearnerStore extends ChangeNotifier {
       final lastRun = (entry.value as Map)['lastRun'];
       if (lastRun != null && (lastRun is! Map || lastRun['output'] is! String || lastRun['error'] is! String || lastRun['code'] is! String || lastRun['recordedAt'] is! String || lastRun['prompts'] is! List || (lastRun['prompts'] as List).any((p) => p is! String))) throw const FormatException('Saved run details are invalid.');
       for (final field in ['viewed','practised','reviewed','helpUsed','codeEdited']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! bool) throw const FormatException('Draft progress is invalid.'); }
+    }
+    final savedFiles=decoded['files'];
+    if(savedFiles!=null){
+      if(savedFiles is! Map)throw const FormatException('Saved files are invalid.');
+      for(final entry in savedFiles.entries){
+        final f=entry.value;
+        if(!allowed.contains(entry.key)||f is! Map||f['workspaceId']!=entry.key||f['topic'] is! String||!courseTopics.any((t)=>t.id==f['topic'])||f['category'] is! String||f['title'] is! String||f['content'] is! String||f['input'] is! String||!['code','answer'].contains(f['kind'])||f['savedAt'] is! String||DateTime.tryParse(f['savedAt'])==null||f['filename'] is! String||!RegExp(r'^[a-z0-9-]+\.(py|txt)$').hasMatch(f['filename']))throw const FormatException('Saved file fields are invalid.');
+      }
     }
     final validExercises = exercises.map((e) => e.id).toSet()..add('opening-assessment');
     for (final entry in (decoded['attempts'] as Map).entries) {
@@ -185,9 +202,10 @@ class LearnerStore extends ChangeNotifier {
     if (lastTopic != null && !courseTopics.any((t) => t.id == lastTopic)) lastTopic = null;
     startedAt = data['startedAt'] as String;
     dark = data['dark'] == true; reminders = data['reminders'] == true; textScale = (data['textScale'] as num).toDouble();
-    drafts.clear(); attempts.clear(); weak.clear(); reviews.clear(); certificates.clear();
+    drafts.clear();files.clear();savedFileAcks.clear(); attempts.clear(); weak.clear(); reviews.clear(); certificates.clear();
     for (final e in (data['drafts'] as Map).entries) { drafts[e.key as String] = Map<String, dynamic>.from(e.value); }
     for (final e in (data['attempts'] as Map).entries) { attempts[e.key as String] = (e.value as List).map((a) => Map<String, dynamic>.from(a)).toList(); }
+    for(final e in ((data['files'] as Map?)??{}).entries){files[e.key as String]=Map<String,dynamic>.from(e.value);savedFileAcks[e.key as String]=files[e.key]!['savedAt'] as String;}
     weak.addAll((data['weak'] as List).cast<String>());
     reviews.addAll(Map<String, bool>.from(data['reviews'] as Map));
     certificates.addAll((data['certificates'] as List).map((a) => Map<String, dynamic>.from(a)));
@@ -203,6 +221,6 @@ class LearnerStore extends ChangeNotifier {
 
 Map<String, dynamic> gradeAnswer(Exercise e, String response) {
   if (e.type == 'written') return {'status':'review','passed':false,'feedback':'Saved for rubric review. A keyword match cannot mark this explanation.'};
-  final correct = e.type == 'choice' ? response == e.answer : e.accepted.any((a) => a.trim().toLowerCase() == response.trim().toLowerCase());
-  return {'status':'graded','passed':correct,'score':correct ? 100 : 0,'feedback':correct ? 'Correct. Explain your reasoning before moving on.' : 'Try again. Review the relevant example and use a hint if needed.'};
+  final correct = e.type == 'choice' ? response == e.answer : e.accepted.any((a) => a.trim().toLowerCase().replaceAll(RegExp(r'\s+'),' ') == response.trim().toLowerCase().replaceAll(RegExp(r'\s+'),' '));
+  return {'status':'graded','passed':correct,'score':correct ? 100 : 0,'feedback':correct ? 'Correct. Activity complete.' : 'Not correct yet. Check the requested answer format and try again.'};
 }

@@ -37,5 +37,12 @@ void main() {
     await tester.ensureVisible(find.text('Assessment'));await tester.tap(find.text('Assessment'));await tester.pumpAndSettle();
     expect(find.text('Source-file convention'),findsOneWidget);expect(find.text('Closing a shell'),findsOneWidget);expect(tester.takeException(),isNull);
   },variant:TargetPlatformVariant({TargetPlatform.linux}));
+  testWidgets('My Files displays the named saved version without a download action', (tester) async {
+    final store=LearnerStore(storage:MemoryStorage());await store.start();
+    await store.saveFile('python-c0-t0',topicId:'python-c0-t0',category:'Practice',title:'',content:'print(7)');
+    await tester.pumpWidget(AcademyApp(store:store));await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Open navigation menu'));await tester.pumpAndSettle();await tester.tap(find.text('My Files'));await tester.pumpAndSettle();
+    expect(find.text('running-and-saving-python-programs-practice.py'),findsOneWidget);expect(find.byTooltip('Download this saved file'),findsOneWidget);expect(tester.takeException(),isNull);
+  },variant:TargetPlatformVariant({TargetPlatform.linux}));
 
 }
