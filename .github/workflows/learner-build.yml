@@ -41,6 +41,8 @@ jobs:
         run: node ../../scripts/test_learner_runner.cjs
       - name: Check worker execution wrapper
         run: python ../../scripts/test_learner_worker.py
+      - name: Check extended lesson examples and reference cases
+        run: python ../../scripts/test_extended_content.py
       - name: Build learner website
         run: flutter build web
       - name: Version web assets and retire stale cache

@@ -3,17 +3,17 @@
 Responsive Flutter learner website and Android app. Login and the admin build are deferred.
 
 ## Learner features
-- Expandable chapters with topics and breadcrumbs; eight original starter lessons and later draft outlines.
+- Expandable chapters with topics and breadcrumbs; 43 original topic lessons, runnable examples and embedded Python terminals.
 - Saved guest notes, code, input, attempts, revision queue and progress on the current device.
 - Python worker runner with input, traceback, stop/time/output limits, function harnesses and exact/normalized/numeric output comparisons.
-- 19 starter activities, progressive hints, classwork, homework, challenges and a project.
+- 19 opening activities and 70 extended classwork/assignment tasks with question-only prompts and gradual hints.
 - Opening assessment, honest eligibility gates and downloadable progress PDFs.
 - JSON backup and validated restore, Python-file import/download, copied lesson code and saved test feedback.
 - Issued opening study records retain their ID, date and learner details on re-download.
 - Resources, separate acknowledgements and data/privacy information.
 - Responsive layout, dark mode, text size and optional device reminders.
 
-Code and objective checks are local self-study evidence. Written explanations and design requirements need review. Full-course certificates remain locked while later lessons are drafts. No verified qualification or university endorsement is claimed.
+Code and objective checks are local self-study evidence. Written explanations and design requirements need review. Full-course certificates remain locked until full-course assessment and review requirements are published. No verified qualification or university endorsement is claimed.
 
 ## Run the learner
 Install the Flutter version pinned in the workflows. In `apps/learner`:

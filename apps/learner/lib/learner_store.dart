@@ -112,7 +112,7 @@ class LearnerStore extends ChangeNotifier {
   int get notesCount => drafts.values.where((d) => (d['notes'] as String? ?? '').trim().isNotEmpty).length;
   double get progress => requiredCount == 0 ? 0 : completedCount / requiredCount;
   bool get openingRecordEligible => completedCount == requiredCount && reviews['opening-project'] == true && assessmentBest >= 80;
-  bool get fullCourseEligible => courseTopics.every((t) => t.ready) && openingRecordEligible;
+  bool get fullCourseEligible => false; // Full-course assessment and review requirements are not published yet.
   double get assessmentBest => (attempts['opening-assessment'] ?? []).fold<double>(0, (value, a) => (a['score'] as num? ?? 0).toDouble() > value ? (a['score'] as num).toDouble() : value);
   Future<void> recordAssessment(int score, Map<String, String> answers) async {
     attempts.putIfAbsent('opening-assessment', () => []).add({'id':'${DateTime.now().microsecondsSinceEpoch}', 'submittedAt':DateTime.now().toIso8601String(), 'score':score, 'answers':answers, 'status':'graded', 'version':1});
