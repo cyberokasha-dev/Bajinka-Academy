@@ -209,7 +209,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
   void edit(String value) { answer = value; widget.store.edit(draftId, response:value); }
   @override Widget build(BuildContext context) {
     final e=widget.exercise;
-    return Padding(padding: const EdgeInsets.only(bottom: 20), child: Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color:widget.store.dark ? const Color(0xff172033) : Colors.white,border:Border.all(color:border),borderRadius:BorderRadius.circular(6)), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    return Padding(padding: const EdgeInsets.only(bottom: 20), child: Material(color:widget.store.dark ? const Color(0xff172033) : Colors.white,shape:RoundedRectangleBorder(side:const BorderSide(color:border),borderRadius:BorderRadius.circular(6)),child:Padding(padding:const EdgeInsets.all(16),child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       Text(e.title, style:const TextStyle(fontSize:18,fontWeight:FontWeight.w700)), const SizedBox(height:16), Text(e.prompt,style:const TextStyle(height:1.6)), const SizedBox(height:16),
       if(e.type=='code') ...[const Padding(padding:EdgeInsets.only(bottom:12),child:Text('Output checks accept equivalent code. Requested design features and explanations need separate review.',style:TextStyle(fontSize:12))),Align(alignment:Alignment.centerRight,child:TextButton.icon(onPressed:()=>Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>FullRunner(title:e.title,store:widget.store,draftId:draftId,exercise:e))).then((_){if(mounted)widget.store.edit(draftId,revision:'view-${DateTime.now().microsecondsSinceEpoch}');}),icon:const Icon(Icons.open_in_full),label:const Text('Full-screen workspace'))),RunnerPanel(store:widget.store,draftId:draftId,exercise:e,helpUsed:helpUsed)]
       else ...[
@@ -223,7 +223,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
       if(e.type=='written') ...[const Padding(padding:EdgeInsets.only(top:12),child:Text('Review criteria • saving does not award an automatic pass.')),for(final criterion in e.rubric) Padding(padding:const EdgeInsets.only(top:6),child:Text('• $criterion'))],
       const Divider(height:32),Text('Saved attempts (${widget.store.attempts[e.id]?.length??0})',style:const TextStyle(fontWeight:FontWeight.w700)),
       for(final a in (widget.store.attempts[e.id]??[]).reversed) ExpansionTile(tilePadding:EdgeInsets.zero,title:Text(a['status']=='review'?'Review pending':a['passed']==true?'Passed local checks':'Try again',style:const TextStyle(fontSize:14)),subtitle:Text('${a['submittedAt']} • ${a['helpUsed']==true?'help used':'no recorded help'}',style:const TextStyle(fontSize:11)),children:[if(a['feedback'] is String) Align(alignment:Alignment.centerLeft,child:Padding(padding:const EdgeInsets.only(bottom:12),child:Text(a['feedback'] as String))),for(final result in (a['tests'] as List? ?? [])) Padding(padding:const EdgeInsets.only(bottom:12),child:Align(alignment:Alignment.centerLeft,child:SelectableText('${result['passed']==true?'Passed':'Review needed'} • ${result['comparison']??'normalized'} comparison\nExpected: ${result['expected']}\nActual: ${result['actual']}${(result['error'] as String? ?? '').isNotEmpty?'\n${result['error']}':''}',style:const TextStyle(fontFamily:'monospace',fontSize:12)))),Align(alignment:Alignment.centerLeft,child:SelectableText(a['answer'] as String? ?? '',style:const TextStyle(fontFamily:'monospace')))]),
-    ])));
+    ]))));
   }
   @override void dispose(){response.dispose();super.dispose();}
 }
