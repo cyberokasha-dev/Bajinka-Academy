@@ -111,7 +111,7 @@ class LearnerStore extends ChangeNotifier {
   int countStage(String stage) => drafts.values.where((d) => d[stage] == true).length;
   int get notesCount => drafts.values.where((d) => (d['notes'] as String? ?? '').trim().isNotEmpty).length;
   double get progress => requiredCount == 0 ? 0 : completedCount / requiredCount;
-  bool get openingRecordEligible => completedCount == requiredCount && reviews['opening-project'] == true && assessmentBest >= 80;
+  bool get openingRecordEligible => requiredCount > 0 && completedCount == requiredCount && reviews['opening-project'] == true && assessmentBest >= 80;
   bool get fullCourseEligible => false; // Full-course assessment and review requirements are not published yet.
   double get assessmentBest => (attempts['opening-assessment'] ?? []).fold<double>(0, (value, a) => (a['score'] as num? ?? 0).toDouble() > value ? (a['score'] as num).toDouble() : value);
   Future<void> recordAssessment(int score, Map<String, String> answers) async {

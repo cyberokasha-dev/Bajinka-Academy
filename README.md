@@ -1,14 +1,14 @@
 # Bajinka Academy
 
-Responsive Flutter learner website and Android app. Login and the admin build are deferred.
+Responsive Flutter learner website and Android app. Learner interface only; course content has been cleared.
 
 ## Learner features
-- Expandable chapters with topics and breadcrumbs; 43 original topic lessons, runnable examples and embedded Python terminals.
+- Expandable chapters with topics and breadcrumbs; 43 retained topic slots and embedded Python terminals.
 - Saved guest notes, code, input, attempts, revision queue and progress on the current device.
 - Python worker runner with input, traceback, stop/time/output limits, function harnesses and exact/normalized/numeric output comparisons.
-- 19 opening activities and 70 extended classwork/assignment tasks with question-only prompts and gradual hints.
-- Opening assessment, honest eligibility gates and downloadable progress PDFs.
-- JSON backup and validated restore, Python-file import/download, copied lesson code and saved test feedback.
+- Empty lesson, classwork, homework, challenge, project and assessment areas.
+- Downloadable progress PDFs; new study records are locked while requirements are empty.
+- JSON backup and validated restore, Python-file import/download, saved workspace output.
 - Issued opening study records retain their ID, date and learner details on re-download.
 - Resources, separate acknowledgements and data/privacy information.
 - Responsive layout, dark mode, text size and optional device reminders.
@@ -30,7 +30,5 @@ The platform generator supplies standard Android/web wrappers. The configuration
 ## Delivery
 `.github/workflows/learner-pages.yml` validates and publishes the learner website on GitHub Pages. `learner-build.yml` validates the same code and builds web and a debug APK for device testing. Store signing/release packaging is still pending. Python requires internet on first use to download the pinned Pyodide runtime from jsDelivr.
 
-## Admin and backend
-`apps/admin` remains a local planning preview, not a secured production admin. `docs/PRODUCT_MAP.md` and `shared/course-map.json` describe the planned product. Supabase configuration is retained separately; the guest learner currently runs without cloud sync or login. Do not connect local draft editing to production without authentication, server-enforced roles and publishing controls.
-
-Private Base44 course records have not been copied into this public learner. The owner deferred importing new questions until the future admin stage. Existing starter material and outlines remain available. Login, secured admin publishing and cloud sync are deferred.
+## Content reset
+Teaching text, examples, questions, assignments, hints, solutions, challenges and projects have been removed. Chapter/topic IDs, navigation, visual layout, notes and code tools are retained. Existing personal device records are preserved. The separate admin application has been removed. Login and cloud sync remain deferred.

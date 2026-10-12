@@ -11,4 +11,4 @@ Not performed:
 - Supabase permissions/persistence: intentionally not implemented in Phase 1.
 - Python execution, auto marking, notifications and certificates: mapped only.
 
-Before release: generate Flutter platform scaffolding, run analysis/tests/web and APK builds, verify responsive browser interactions, then implement backend authorisation before enabling real admin writes.
+Before release: generate Flutter platform scaffolding, run analysis/tests/web and APK builds, verify responsive browser interactions, verify that cleared content stays empty.
