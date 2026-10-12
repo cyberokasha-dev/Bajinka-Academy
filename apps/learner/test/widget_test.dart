@@ -21,4 +21,13 @@ void main() {
     tester.view.physicalSize=const Size(390,844);tester.view.devicePixelRatio=1;addTearDown(tester.view.resetPhysicalSize);addTearDown(tester.view.resetDevicePixelRatio);
     await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();expect(tester.takeException(),isNull);
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
+  testWidgets('opening assessment keeps its authored eight-question bank', (tester) async {
+    await tester.pumpWidget(AcademyApp(store:LearnerStore(storage:MemoryStorage())));await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Open navigation menu'));await tester.pumpAndSettle();
+    await tester.tap(find.text('Assessments'));await tester.pumpAndSettle();
+    expect(find.byType(TextFormField),findsNWidgets(3));
+    expect(find.textContaining('Eight objective questions'),findsOneWidget);
+    expect(tester.takeException(),isNull);
+  }, variant:TargetPlatformVariant({TargetPlatform.linux}));
+
 }
