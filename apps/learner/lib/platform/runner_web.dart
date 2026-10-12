@@ -17,7 +17,7 @@ class _PythonRunnerState extends State<PythonRunner> {
   late final JSFunction listener;
   @override void initState() {
     super.initState();
-    frame = web.HTMLIFrameElement()..src = Uri.base.resolve('assets/assets/runner/runner.html?v=0.5.0').toString()..title = 'Python code runner';
+    frame = web.HTMLIFrameElement()..src = Uri.base.resolve('assets/assets/runner/runner.html?v=0.5.1').toString()..title = 'Python code runner';
     frame.style..border = '0'..width = '100%'..height = '100%';
     listener = ((web.MessageEvent event) {
       if (event.source != frame.contentWindow || event.origin != web.window.location.origin) return;

@@ -1,6 +1,8 @@
 """Version learner web entry assets so existing browser caches receive updates."""
 import pathlib, re, sys
 root = pathlib.Path('build/web')
+if not (root / 'assets/assets/runner/marking.js').is_file():
+    raise SystemExit('Missing runner comparison asset; cannot publish a broken checker.')
 version = re.sub(r'[^a-zA-Z0-9]', '', sys.argv[1])[:16]
 bootstrap = root / 'flutter_bootstrap.js'
 s = bootstrap.read_text()
