@@ -16,11 +16,11 @@ class SlowCloud implements DeviceStorage {
   @override Future<void> write(String key,String value) async {writes.add(value);if(writes.length==1)await release.future;}
 }
 void main() {
-  test('two chapters publish independent activities without unlocking a course record', () async {
+  test('four chapters publish independent activities without unlocking a course record', () async {
     final store = LearnerStore(storage:MemoryStorage());await store.start();
-    expect(courseTopics.length,43);expect(courseTopics.where((t)=>t.ready).length,14);expect(courseTopics.where((t)=>t.chapter>1).every((t)=>!t.ready),true);expect(exercises.length,112);expect(exercises.map((e)=>e.id).toSet().length,112);expect(exercises.where((e)=>e.type=='code').every((e)=>e.tests.isNotEmpty),true);
+    expect(courseTopics.length,43);expect(courseTopics.where((t)=>t.ready).length,22);expect(courseTopics.where((t)=>t.chapter>3).every((t)=>!t.ready),true);expect(exercises.length,176);for(final topic in courseTopics.where((t)=>t.chapter<=3)){for(final category in ['Classwork','Homework','Challenge','Project','Assessment']){expect(forTopic(topic.id,category),isNotEmpty,reason:'${topic.id}: $category');}}expect(exercises.map((e)=>e.id).toSet().length,176);expect(exercises.where((e)=>e.type=='code').every((e)=>e.tests.isNotEmpty),true);
     await store.setReview('opening-project',true);await store.recordAssessment(100,{});await store.preferences(displayName:'Learner');
-    expect(store.requiredCount,14);expect(store.progress,0);expect(store.openingRecordEligible,false);await expectLater(store.issueOpeningRecord(),throwsFormatException);store.dispose();
+    expect(store.requiredCount,46);expect(store.progress,0);expect(store.openingRecordEligible,false);await expectLater(store.issueOpeningRecord(),throwsFormatException);store.dispose();
   });
   test('homework code and marking remain tied to their own activity IDs', () async {
     final storage=MemoryStorage();final store=LearnerStore(storage:storage);await store.start();

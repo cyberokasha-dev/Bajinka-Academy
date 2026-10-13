@@ -69,6 +69,46 @@
       "id": "python-c1-t5",
       "example": "command = \"status\"\nmatch command:\n    case \"status\":\n        print(\"Show status\")\n    case \"help\":\n        print(\"Show help\")\n    case _:\n        print(\"Unknown\")",
       "output": "Show status"
+    },
+    {
+      "id": "python-c2-t0",
+      "example": "n = 3\nwhile n > 0:\n    print(n)\n    n -= 1\nprint(\"Done\")",
+      "output": "3\n2\n1\nDone"
+    },
+    {
+      "id": "python-c2-t1",
+      "example": "for n in range(2, 5):\n    print(n)",
+      "output": "2\n3\n4"
+    },
+    {
+      "id": "python-c2-t2",
+      "example": "sessions = [15, 30, 20]\nfor minutes in sessions:\n    print(minutes)\nprint(len(sessions))",
+      "output": "15\n30\n20\n3"
+    },
+    {
+      "id": "python-c2-t3",
+      "example": "minutes = {\"Python\": 30, \"Maths\": 20}\nfor subject, value in minutes.items():\n    print(f\"{subject}: {value}\")",
+      "output": "Python: 30\nMaths: 20"
+    },
+    {
+      "id": "python-c2-t4",
+      "example": "values = [10, 30, 40]\ntotal = 0\ncount = 0\nfor value in values:\n    total += value\n    if value >= 30:\n        count += 1\nprint(total)\nprint(count)",
+      "output": "80\n2"
+    },
+    {
+      "id": "python-c3-t0",
+      "example": "try:\n    int(\"bad\")\nexcept ValueError:\n    print(\"Invalid integer text\")\nprint(\"Continued\")",
+      "output": "Invalid integer text\nContinued"
+    },
+    {
+      "id": "python-c3-t1",
+      "example": "for text in [\"bad\", \"-2\", \"10\"]:\n    try:\n        minutes = int(text)\n    except ValueError:\n        print(\"Not an integer\")\n        continue\n    if minutes < 0:\n        print(\"Negative minutes\")\n    else:\n        print(f\"Accepted: {minutes}\")",
+      "output": "Not an integer\nNegative minutes\nAccepted: 10"
+    },
+    {
+      "id": "python-c3-t2",
+      "example": "def percentage(total, target):\n    if target <= 0:\n        raise ValueError(\"Target must be positive\")\n    return total / target * 100\n\ntry:\n    percentage(30, 0)\nexcept ValueError as error:\n    print(error)",
+      "output": "Target must be positive"
     }
   ],
   "activities": [
@@ -1334,6 +1374,904 @@
           ],
           "expected": "Invalid",
           "harness": "assert callable(globals().get('report')), 'Define report(target, total, failed).'\nassert report(' MOCK ',0,0)=='Target: mock\\nFailure rate: 0.00%\\nLevel: Normal', 'Return the report string with the zero-total rule.'",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t0-classwork-complete-v1",
+      "reference": "n=int(input())\nwhile n>0:\n    print(n)\n    n-=1\nprint(\"Done\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "3"
+          ],
+          "harness": "",
+          "expected": "3\n2\n1\nDone",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0"
+          ],
+          "harness": "",
+          "expected": "Done",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "1"
+          ],
+          "harness": "",
+          "expected": "1\nDone",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t0-homework-complete-v1",
+      "reference": "def double_until(start,limit):\n    while start<limit:\n        start*=2\n    return start",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=double_until(3,20)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "24",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=double_until(8,8)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "8",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=double_until(1,9)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "16",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t0-challenge-complete-v1",
+      "reference": "def months_needed(balance,deposit,goal):\n    months=0\n    while balance<goal:\n        balance+=deposit\n        months+=1\n    return months",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=months_needed(10,7,30)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "3",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=months_needed(30,7,30)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=months_needed(0,5,11)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "3",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t0-project-complete-v1",
+      "reference": "n=int(input())\nwhile n>0:\n    print(f\"Round {n}\")\n    n-=1\nprint(\"Report ready\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "2"
+          ],
+          "harness": "",
+          "expected": "Round 2\nRound 1\nReport ready",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "1"
+          ],
+          "harness": "",
+          "expected": "Round 1\nReport ready",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t1-classwork-complete-v1",
+      "reference": "n=int(input())\nfor i in range(1,n+1):\n    print(i)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "3"
+          ],
+          "harness": "",
+          "expected": "1\n2\n3",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0"
+          ],
+          "harness": "",
+          "expected": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "1"
+          ],
+          "harness": "",
+          "expected": "1",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t1-homework-complete-v1",
+      "reference": "def sum_squares(n):\n    total=0\n    for i in range(1,n+1):\n        total+=i*i\n    return total",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=sum_squares(3)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "14",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=sum_squares(0)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=sum_squares(5)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "55",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t1-challenge-complete-v1",
+      "reference": "def marker_total(n):\n    total=0\n    for i in range(0,n,3):\n        total+=i\n    return total",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=marker_total(10)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "18",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=marker_total(3)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=marker_total(7)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "9",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t1-project-complete-v1",
+      "reference": "count=int(input())\nfor i in range(1,count+1):\n    minutes=int(input())\n    print(f\"Session {i}: {minutes}\")\nprint(f\"Sessions recorded: {count}\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "2",
+            "20",
+            "35"
+          ],
+          "harness": "",
+          "expected": "Session 1: 20\nSession 2: 35\nSessions recorded: 2",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0"
+          ],
+          "harness": "",
+          "expected": "Sessions recorded: 0",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t2-classwork-complete-v1",
+      "reference": "def display_values(values):\n    for value in values:\n        print(value)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "display_values([2,5])",
+          "expected": "2\n5",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "display_values([])",
+          "expected": "",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "display_values([0])",
+          "expected": "0",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t2-homework-complete-v1",
+      "reference": "def long_sessions(values):\n    result=[]\n    for value in values:\n        if value>=30:\n            result.append(value)\n    return result",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(long_sessions([29,30,45,0]))",
+          "expected": "[30, 45]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(long_sessions([]))",
+          "expected": "[]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(long_sessions([60,30]))",
+          "expected": "[60, 30]",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t2-challenge-complete-v1",
+      "reference": "def rise_count(values):\n    count=0\n    for i in range(1,len(values)):\n        if values[i]>values[i-1]:\n            count+=1\n    return count",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=rise_count([2,5,5,1,3])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "2",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=rise_count([])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=rise_count([9])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t2-project-complete-v1",
+      "reference": "def session_summary(values):\n    total=0\n    long_count=0\n    for value in values:\n        total+=value\n        if value>=30:\n            long_count+=1\n    return [total,long_count]",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(session_summary([20,30,40]))",
+          "expected": "[90, 2]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(session_summary([]))",
+          "expected": "[0, 0]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(session_summary([0,29]))",
+          "expected": "[29, 0]",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t3-classwork-complete-v1",
+      "reference": "def recorded_minutes(records,subject):\n    return records.get(subject,0)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=recorded_minutes({'Python':30},'Python')\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "30",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=recorded_minutes({},'Maths')\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=recorded_minutes({'Python':0},'Python')\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t3-homework-complete-v1",
+      "reference": "def frequencies(names):\n    result={}\n    for name in names:\n        result[name]=result.get(name,0)+1\n    return result",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(frequencies(['A','B','A']))",
+          "expected": "{'A': 2, 'B': 1}",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(frequencies([]))",
+          "expected": "{}",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(frequencies(['a','A']))",
+          "expected": "{'a': 1, 'A': 1}",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t3-challenge-complete-v1",
+      "reference": "def leaders(records):\n    if not records:\n        return []\n    highest=max(records.values())\n    result=[]\n    for key,value in records.items():\n        if value==highest:\n            result.append(key)\n    return sorted(result)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(leaders({'B':5,'A':5,'C':2}))",
+          "expected": "['A', 'B']",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(leaders({}))",
+          "expected": "[]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(leaders({'Z':0}))",
+          "expected": "['Z']",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t3-project-complete-v1",
+      "reference": "def subject_totals(records):\n    totals={}\n    for subject,minutes in records:\n        totals[subject]=totals.get(subject,0)+minutes\n    return totals",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(subject_totals([['Python',20],['Maths',10],['Python',30]]))",
+          "expected": "{'Python': 50, 'Maths': 10}",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(subject_totals([]))",
+          "expected": "{}",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(subject_totals([['ICT',0]]))",
+          "expected": "{'ICT': 0}",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t4-classwork-complete-v1",
+      "reference": "def count_at_least(values,threshold):\n    count=0\n    for value in values:\n        if value>=threshold:\n            count+=1\n    return count",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=count_at_least([10,30,40],30)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "2",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=count_at_least([],0)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=count_at_least([-2,0,2],0)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "2",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t4-homework-complete-v1",
+      "reference": "def mean_minutes(values):\n    if not values:\n        return 0\n    total=0\n    for value in values:\n        total+=value\n    return total/len(values)",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=mean_minutes([10,20,30])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "20",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=mean_minutes([])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=mean_minutes([0,5])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "2.5",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t4-challenge-complete-v1",
+      "reference": "def sum_before_stop(values):\n    total=0\n    for value in values:\n        if value==-1:\n            break\n        total+=value\n    return total",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=sum_before_stop([3,4,-1,100])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "7",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=sum_before_stop([-1,5])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=sum_before_stop([2,3])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "5",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c2-t4-project-complete-v1",
+      "reference": "def build_report(records,target):\n    total=0\n    count=0\n    for subject,minutes in records:\n        total+=minutes\n        if minutes>=30:\n            count+=1\n    return [total,len(records),count,total/target*100]",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(build_report([['Python',30],['Maths',20],['Python',40]],100))",
+          "expected": "[90, 3, 2, 90.0]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(build_report([],60))",
+          "expected": "[0, 0, 0, 0.0]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(build_report([['ICT',60]],30))",
+          "expected": "[60, 1, 1, 200.0]",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t0-classwork-complete-v1",
+      "reference": "text=input()\ntry:\n    number=int(text)\nexcept ValueError:\n    print(\"Invalid integer\")\nelse:\n    print(f\"Value: {number}\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "12"
+          ],
+          "harness": "",
+          "expected": "Value: 12",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "bad"
+          ],
+          "harness": "",
+          "expected": "Invalid integer",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "3.5"
+          ],
+          "harness": "",
+          "expected": "Invalid integer",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t0-homework-complete-v1",
+      "reference": "def divide_or_none(a,b):\n    try:\n        return a/b\n    except ZeroDivisionError:\n        return None",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=divide_or_none(8,2)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "4.0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "print(divide_or_none(1,0))",
+          "expected": "None",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "result=divide_or_none(-6,3)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "-2.0",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t0-challenge-complete-v1",
+      "reference": "def lookup_or_none(records,key):\n    try:\n        return records[key]\n    except KeyError:\n        return None",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=lookup_or_none({'A':0},'A')\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "print(lookup_or_none({},'A'))",
+          "expected": "None",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "result=lookup_or_none({'B':9},'B')\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "9",
+          "comparison": "numeric"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t0-project-complete-v1",
+      "reference": "text=input()\ntry:\n    minutes=int(text)\nexcept ValueError:\n    print(\"Invalid integer\")\nelse:\n    print(f\"Minutes: {minutes}\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "30"
+          ],
+          "harness": "",
+          "expected": "Minutes: 30",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "oops"
+          ],
+          "harness": "",
+          "expected": "Invalid integer",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "-1"
+          ],
+          "harness": "",
+          "expected": "Minutes: -1",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t1-classwork-complete-v1",
+      "reference": "try:\n    value=int(input())\nexcept ValueError:\n    print(\"Invalid integer\")\nelse:\n    if value<0:\n        print(\"Negative\")\n    else:\n        print(f\"Accepted: {value}\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "bad"
+          ],
+          "harness": "",
+          "expected": "Invalid integer",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "-2"
+          ],
+          "harness": "",
+          "expected": "Negative",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0"
+          ],
+          "harness": "",
+          "expected": "Accepted: 0",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t1-homework-complete-v1",
+      "reference": "def first_valid(texts):\n    for text in texts:\n        try:\n            value=int(text)\n        except ValueError:\n            continue\n        if value>=0:\n            return value\n    return None",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=first_valid(['bad','-2','0','9'])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "print(first_valid(['bad','-1']))",
+          "expected": "None",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(first_valid([]))",
+          "expected": "None",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t1-challenge-complete-v1",
+      "reference": "for attempt in range(3):\n    try:\n        value=int(input())\n    except ValueError:\n        print(\"Retry\")\n        continue\n    if value<0:\n        print(\"Retry\")\n        continue\n    print(f\"Accepted: {value}\")\n    break\nelse:\n    print(\"Unavailable\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "bad",
+            "-1",
+            "4"
+          ],
+          "harness": "",
+          "expected": "Retry\nRetry\nAccepted: 4",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0"
+          ],
+          "harness": "",
+          "expected": "Accepted: 0",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "bad",
+            "bad",
+            "bad"
+          ],
+          "harness": "",
+          "expected": "Retry\nRetry\nRetry\nUnavailable",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t1-project-complete-v1",
+      "reference": "def validated_sessions(texts):\n    accepted=[]\n    rejected=0\n    for text in texts:\n        try:\n            value=int(text)\n        except ValueError:\n            rejected+=1\n            continue\n        if value<0:\n            rejected+=1\n        else:\n            accepted.append(value)\n    return [accepted,rejected]",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(validated_sessions(['20','bad','-1','0']))",
+          "expected": "[[20, 0], 2]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(validated_sessions([]))",
+          "expected": "[[], 0]",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(validated_sessions(['30','40']))",
+          "expected": "[[30, 40], 0]",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t2-classwork-complete-v1",
+      "reference": "def target_percent(total,target):\n    if type(total) is not int or type(target) is not int:\n        raise TypeError(\"Integers required\")\n    if total<0 or target<=0:\n        raise ValueError(\"Invalid values\")\n    return total/target*100",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=target_percent(30,60)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "50.0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=target_percent(0,10)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0.0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=target_percent(90,60)\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "150.0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "try:\n    target_percent(3,0)\nexcept ValueError:\n    print(\"Expected failure\")\nelse:\n    raise AssertionError(\"Expected ValueError\")",
+          "expected": "Expected failure",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "try:\n    target_percent('3',5)\nexcept TypeError:\n    print(\"Expected failure\")\nelse:\n    raise AssertionError(\"Expected TypeError\")",
+          "expected": "Expected failure",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "try:\n    target_percent(True,5)\nexcept TypeError:\n    print(\"Expected failure\")\nelse:\n    raise AssertionError(\"Expected TypeError\")",
+          "expected": "Expected failure",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t2-homework-complete-v1",
+      "reference": "def target_percent(total,target):\n    if type(total) is not int or type(target) is not int:\n        raise TypeError(\"Integers required\")\n    if total<0 or target<=0:\n        raise ValueError(\"Invalid values\")\n    return total/target*100\ndef classify_target(total,target):\n    try:\n        target_percent(total,target)\n    except TypeError:\n        return \"TypeError\"\n    except ValueError:\n        return \"ValueError\"\n    return \"Valid\"",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "print(classify_target('30',60))",
+          "expected": "TypeError",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(classify_target(30,0))",
+          "expected": "ValueError",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(classify_target(30,60))",
+          "expected": "Valid",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "print(classify_target(True,60))",
+          "expected": "TypeError",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t2-challenge-complete-v1",
+      "reference": "def nonnegative_total(values):\n    total=0\n    for value in values:\n        if type(value) is not int:\n            raise TypeError(\"Integer required\")\n        if value<0:\n            raise ValueError(\"Negative observation\")\n        total+=value\n    return total",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [],
+          "harness": "result=nonnegative_total([0,2,3])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "5",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=nonnegative_total([])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "0",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "result=nonnegative_total([9])\nassert type(result) in (int,float), \"Return a numeric result.\"\nprint(result)",
+          "expected": "9",
+          "comparison": "numeric"
+        },
+        {
+          "input": [],
+          "harness": "try:\n    nonnegative_total([-1])\nexcept ValueError:\n    print(\"Expected failure\")\nelse:\n    raise AssertionError(\"Expected ValueError\")",
+          "expected": "Expected failure",
+          "comparison": "normalized"
+        },
+        {
+          "input": [],
+          "harness": "try:\n    nonnegative_total(['3'])\nexcept TypeError:\n    print(\"Expected failure\")\nelse:\n    raise AssertionError(\"Expected TypeError\")",
+          "expected": "Expected failure",
+          "comparison": "normalized"
+        }
+      ]
+    },
+    {
+      "id": "python-c3-t2-project-complete-v1",
+      "reference": "count=int(input())\naccepted=[]\nrejected=0\nfor i in range(count):\n    try:\n        value=int(input())\n    except ValueError:\n        rejected+=1\n        continue\n    if value<0:\n        rejected+=1\n    else:\n        accepted.append(value)\ntry:\n    target=int(input())\n    if target<=0:\n        raise ValueError(\"Invalid target\")\nexcept ValueError:\n    print(\"Invalid target\")\nelse:\n    total=sum(accepted)\n    print(f\"Total: {total}\")\n    print(f\"Accepted: {len(accepted)}\")\n    print(f\"Rejected: {rejected}\")\n    print(f\"Progress: {total/target*100:.2f}%\")",
+      "alternatives": [],
+      "tests": [
+        {
+          "input": [
+            "4",
+            "30",
+            "bad",
+            "-1",
+            "20",
+            "100"
+          ],
+          "harness": "",
+          "expected": "Total: 50\nAccepted: 2\nRejected: 2\nProgress: 50.00%",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "0",
+            "60"
+          ],
+          "harness": "",
+          "expected": "Total: 0\nAccepted: 0\nRejected: 0\nProgress: 0.00%",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "1",
+            "20",
+            "0"
+          ],
+          "harness": "",
+          "expected": "Invalid target",
+          "comparison": "normalized"
+        },
+        {
+          "input": [
+            "1",
+            "20",
+            "bad"
+          ],
+          "harness": "",
+          "expected": "Invalid target",
           "comparison": "normalized"
         }
       ]
