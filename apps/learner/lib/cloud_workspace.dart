@@ -37,16 +37,16 @@ class CloudAccountGate extends StatefulWidget {
   @override State<CloudAccountGate> createState()=>_CloudAccountGateState();
 }
 class _CloudAccountGateState extends State<CloudAccountGate> {
-  final email=TextEditingController(),password=TextEditingController(),guestName=TextEditingController();
+  final email=TextEditingController(),password=TextEditingController(),guestName=TextEditingController(),newPassword=TextEditingController(),confirmNewPassword=TextEditingController();
   final client=Supabase.instance.client;
   StreamSubscription<AuthState>? subscription;
   LearnerStore? store;
   LearnerStore? guestStore;
   String? owner;
   String error='',notice='';
-  bool busy=false,loading=false;
+  bool busy=false,loading=false,recovering=false;
   int generation=0;
-  @override void initState(){super.initState();subscription=client.auth.onAuthStateChange.listen((state){unawaited(loadAccount());},onError:(_){if(mounted)setState(()=>error='The login session could not refresh. Your unsaved work remains open.');});unawaited(loadAccount());}
+  @override void initState(){super.initState();subscription=client.auth.onAuthStateChange.listen((state){if(state.event==AuthChangeEvent.passwordRecovery){if(mounted)setState(()=>recovering=true);return;}unawaited(loadAccount());},onError:(_){if(mounted)setState(()=>error='The login session could not refresh. Your unsaved work remains open.');});unawaited(loadAccount());}
   Future<void> loadAccount() async {
     final user=client.auth.currentUser;
     if(user?.id==owner && store!=null)return;
@@ -99,7 +99,30 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
     catch(_){if(mounted)setState(()=>error='Could not connect to Supabase. Check your connection and try again.');}
     finally{if(mounted)setState(()=>busy=false);}
   }
+  Future<void> updateRecoveredPassword() async {
+    if(newPassword.text.length<8){setState(()=>error='Use a password with at least eight characters.');return;}
+    if(newPassword.text!=confirmNewPassword.text){setState(()=>error='The passwords do not match.');return;}
+    setState(()=>{busy=true,error='',notice=''});
+    try{
+      await client.auth.updateUser(UserAttributes(password:newPassword.text));
+      newPassword.clear();confirmNewPassword.clear();
+      await client.auth.signOut();
+      if(mounted)setState(()=>{recovering=false,notice='Your password has been updated. Sign in with your new password.'});
+    }on AuthException catch(e){if(mounted)setState(()=>error=e.message);}
+    catch(_){if(mounted)setState(()=>error='Could not update your password. Open the reset link again and retry.');}
+    finally{if(mounted)setState(()=>busy=false);}
+  }
+  Widget passwordRecoveryScreen()=>Scaffold(appBar:AppBar(title:const Text('Reset your password')),body:Center(child:SingleChildScrollView(padding:const EdgeInsets.all(24),child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:440),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+    const Icon(Icons.lock_reset,size:42,color:Color(0xff0eaaa7)),const SizedBox(height:20),const Text('Choose a new password',style:TextStyle(fontSize:25,fontWeight:FontWeight.w700)),const SizedBox(height:12),
+    const Text('Enter and confirm your new password. Use at least eight characters.'),const SizedBox(height:24),
+    TextField(controller:newPassword,obscureText:true,enableSuggestions:false,autocorrect:false,decoration:const InputDecoration(labelText:'New password',border:OutlineInputBorder())),const SizedBox(height:16),
+    TextField(controller:confirmNewPassword,obscureText:true,enableSuggestions:false,autocorrect:false,decoration:const InputDecoration(labelText:'Confirm new password',border:OutlineInputBorder()),onSubmitted:(_)=>updateRecoveredPassword()),const SizedBox(height:18),
+    FilledButton(onPressed:busy?null:updateRecoveredPassword,child:Text(busy?'Updating…':'Update password')),
+    if(error.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(error,style:const TextStyle(color:Colors.red))),
+  ])))));
+  }
   @override Widget build(BuildContext context){
+    if(recovering)return passwordRecoveryScreen();
     if(guestStore!=null)return widget.builder(guestStore!);
     if(loading)return const Scaffold(body:Center(child:CircularProgressIndicator()));
     if(store!=null&&client.auth.currentUser?.id==owner)return widget.builder(store!);
@@ -125,5 +148,5 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
       const SizedBox(height:16),const Text('Internet is required. You will sign in again after reopening or refreshing the app.',style:TextStyle(fontSize:12)),
     ])))));
   }
-  @override void dispose(){generation++;subscription?.cancel();guestStore?.dispose();email.dispose();password.dispose();guestName.dispose();super.dispose();}
+  @override void dispose(){generation++;subscription?.cancel();guestStore?.dispose();email.dispose();password.dispose();guestName.dispose();newPassword.dispose();confirmNewPassword.dispose();super.dispose();}
 }
