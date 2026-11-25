@@ -5,7 +5,8 @@ Responsive Flutter learner website and Android app. Learner interface with indep
 ## Learner features
 - Expandable chapters with topics and breadcrumbs; 43 retained topic slots; the first 22 have lessons and all eight topic sections.
 - My Files stores manually saved versions grouped by chapter, topic and activity. Save in app and Download are separate; Run never downloads a file.
-- Supabase account login and cloud-only storage for notes, code, input, terminal history/transcripts, attempts, preferences, revision and progress. Login sessions are not persisted; sign in again after reopening.
+- Supabase account login with cloud storage for notes, code, input, terminal history/transcripts, attempts, preferences, revision and progress. Includes a password-reset email request.
+- Continue as guest with a required display name. Guest work exists only in memory for the current session; it is not uploaded or persisted and is lost when the session ends.
 - Large Python workspace with fixed controls, independent desktop panes, mobile Code/Terminal tabs and full-screen mode.
 - Persistent Python shell with multiline blocks, expression output, saved command history and interactive top-level input(). Input inside synchronous functions and scripts uses the supplied input box.
 - Fresh workers for scripts/homework checks, traceback, stop/time/output limits, function harnesses and exact/normalized/numeric output comparisons.
