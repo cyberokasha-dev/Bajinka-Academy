@@ -83,7 +83,7 @@ void main() {
     await tester.tap(find.text('Open Python workspace'));
     await tester.pumpAndSettle();
     expect(find.text('Python Studio'), findsWidgets);
-    expect(find.text('The Python runner is available on web and Android.'), findsOneWidget);
+    expect(find.text('The Python runner is available on web, Android and iOS.'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));

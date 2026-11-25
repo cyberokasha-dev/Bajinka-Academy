@@ -8,7 +8,7 @@ Dashboard; Python Studio; Cybersecurity Lab; Projects; Notebook; Portfolio; My F
 
 ## Implemented in this branch
 - Workbench dashboard and practical-tool navigation. Course and assessment items are not part of the visible navigation.
-- Python Studio reuses the existing Pyodide browser runner. Its general workspace ID is supported by filename generation, My Files and backup validation; it is not presented as a Linux shell or unrestricted desktop Python.
+- Python Studio reuses the Pyodide runner. On desktop, the editor and terminal/output are side-by-side; on narrow screens they switch to Code and Terminal tabs. The shell keeps Python variables for the session. Its general workspace ID is supported by filename generation, My Files and backup validation. Web and Android/iOS WebView are supported; the Linux desktop fallback is informational only.
 - Project creation, editing, deletion, category, objective, status, technologies and repository/demo URL fields. Project records are saved in the signed-in workbench record.
 - Defensive fictional cybersecurity checklists for network design, SOC investigation, email review, firewall policy, incident response and security audit. Case notes and checklist selections save separately.
 - My Files lists saved Python/text versions independently of old course-topic groupings.
@@ -25,7 +25,7 @@ Pyodide is a browser Python runtime, not a Linux shell. Only packages compatible
 - Private Supabase Storage uploads for certificates and evidence, issuer/date metadata and verification links.
 - Evidence-based achievements and external portfolio publishing.
 - Functional CV, cover-letter, apprenticeship-tracking and interview-preparation tools.
-- A dedicated Linux/container Python runtime, multi-file project editor and package-management workflow.
+- A dedicated Linux/container Python runtime, multi-file project editor, syntax-aware IDE features and package-management workflow. The current editor is a plain text editor; the Python shell is not an operating-system terminal.
 - Full removal of dormant course-specific implementation and migration of any useful legacy notes/files. The old course data model remains as a compatibility layer; it is not exposed in the new navigation.
 - A complete functional and privacy review before public release.
 
