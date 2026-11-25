@@ -86,15 +86,40 @@ class _CybersecurityLabState extends State<CybersecurityLab>{
  'Incident Response':['Record report and time','Identify affected assets','Preserve logs and evidence','Plan authorised containment','Recover from known-good state','Document lessons learned'],
  'Security Audit':['Identify unsupported software','Review administrator access','Check backup and restore testing','Review multi-factor authentication','Check network segmentation','Prioritise remediation']
  };
- @override void initState(){super.initState();notes=TextEditingController(text:widget.store.draft('wb-lab')['notes'] as String? ?? '');}
+ String _checklistId(String value) => 'wb-lab-${value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '')}';
+ Set<String> _readChecklist(String value) {
+  try {
+   final raw = widget.store.draft(_checklistId(value))['notes'] as String? ?? '';
+   if (raw.isEmpty) return <String>{};
+   final decoded = jsonDecode(raw);
+   if (decoded is! List) return <String>{};
+   return decoded.whereType<String>().where((item) => (tasks[value] ?? const <String>[]).contains(item)).toSet();
+  } catch (_) { return <String>{}; }
+ }
+ @override void initState(){
+  super.initState();
+  notes=TextEditingController(text:widget.store.draft('wb-lab')['notes'] as String? ?? '');
+  checked.addAll(_readChecklist(lab));
+ }
  @override void dispose(){notes.dispose();super.dispose();}
  void save(){widget.store.edit('wb-lab',notes:notes.text,revision:'lab-${DateTime.now().microsecondsSinceEpoch}');widget.store.save();}
+ void saveChecklist(){
+  final ordered = checked.toList()..sort();
+  widget.store.edit(_checklistId(lab),notes:jsonEncode(ordered),revision:'checklist-${DateTime.now().microsecondsSinceEpoch}');
+  widget.store.save();
+ }
  @override Widget build(BuildContext c)=>Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
  const Text('Cybersecurity Lab',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold)),const SizedBox(height:8),
  const Text('Fictional, local defensive simulations. No external systems are contacted and no real credentials or targets are used.'),
- DropdownButtonFormField(initialValue:lab,decoration:const InputDecoration(labelText:'Select a lab'),items:tasks.keys.map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setState(()=>lab=v??'Network Builder')),
+ DropdownButtonFormField(initialValue:lab,decoration:const InputDecoration(labelText:'Select a lab'),items:tasks.keys.map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setState((){
+  lab=v??'Network Builder';
+  checked..clear()..addAll(_readChecklist(lab));
+ })),
  const SizedBox(height:12),Text(lab,style:const TextStyle(fontSize:20,fontWeight:FontWeight.bold)),
- for(final t in tasks[lab]!)CheckboxListTile(dense:true,contentPadding:EdgeInsets.zero,value:checked.contains(t),title:Text(t),onChanged:(v)=>setState(()=>v==true?checked.add(t):checked.remove(t))),
+ for(final t in tasks[lab]!)CheckboxListTile(dense:true,contentPadding:EdgeInsets.zero,value:checked.contains(t),title:Text(t),onChanged:(v){
+  setState(()=>v==true?checked.add(t):checked.remove(t));
+  saveChecklist();
+ }),
  const SizedBox(height:12),const Text('Case notes',style:TextStyle(fontWeight:FontWeight.bold)),
  TextField(controller:notes,minLines:5,maxLines:10,decoration:const InputDecoration(border:OutlineInputBorder(),hintText:'Record observations, evidence, decisions and recommendations...'),onChanged:(_)=>save()),
  Align(alignment:Alignment.centerRight,child:TextButton.icon(onPressed:save,icon:const Icon(Icons.save),label:const Text('Save notes'))),

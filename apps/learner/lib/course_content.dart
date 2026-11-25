@@ -117,3 +117,17 @@ String workspaceFilename(Topic topic, String category, {String activity = '', bo
   final name=parts.where((part)=>part.isNotEmpty).join('-');
   return '${name.length>170?name.substring(0,170):name}.${code?'py':'txt'}';
 }
+
+
+// General workbench workspaces do not belong to a course Topic. Keep their
+// filenames deterministic without passing their IDs to topicById().
+String workspaceFilenameFor(String workspaceId, String category, {String activity = '', bool code = true}) {
+  final matches = courseTopics.where((topic) => topic.id == workspaceId);
+  if (matches.isNotEmpty) {
+    return workspaceFilename(matches.first, category, activity: activity, code: code);
+  }
+  String slug(String text) => text.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
+  final parts = [slug(workspaceId), slug(category), if (activity.isNotEmpty) slug(activity)];
+  final name = parts.where((part) => part.isNotEmpty).join('-');
+  return '${name.length > 170 ? name.substring(0, 170) : name}.${code ? 'py' : 'txt'}';
+}

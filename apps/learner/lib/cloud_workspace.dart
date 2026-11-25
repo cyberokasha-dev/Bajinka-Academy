@@ -126,8 +126,8 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
     if(loading)return const Scaffold(body:Center(child:CircularProgressIndicator()));
     if(store!=null&&client.auth.currentUser?.id==owner)return widget.builder(store!);
     return Scaffold(appBar:AppBar(title:const Text('Bajinka Academy')),body:Center(child:SingleChildScrollView(padding:const EdgeInsets.all(24),child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:440),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
-      const Icon(Icons.school_outlined,size:42,color:Color(0xff0eaaa7)),const SizedBox(height:20),const Text('Your private learning workspace',style:TextStyle(fontSize:25,fontWeight:FontWeight.w700)),const SizedBox(height:12),
-      const Text('Sign in to load your notes, code, terminal history, settings and learning record from Supabase. Saved work belongs to your account. This app does not keep local work or login credentials.'),const SizedBox(height:24),
+      const Icon(Icons.school_outlined,size:42,color:Color(0xff0eaaa7)),const SizedBox(height:20),const Text('Your private workbench',style:TextStyle(fontSize:25,fontWeight:FontWeight.w700)),const SizedBox(height:12),
+      const Text('Sign in to load your projects, Python workspaces, investigation notes, saved files and settings from Supabase. Your saved work belongs to your account.'),const SizedBox(height:24),
       if(client.auth.currentUser==null)...[
         TextField(controller:email,keyboardType:TextInputType.emailAddress,autocorrect:false,decoration:const InputDecoration(labelText:'Email',border:OutlineInputBorder())),const SizedBox(height:16),
         TextField(controller:password,obscureText:true,enableSuggestions:false,autocorrect:false,decoration:const InputDecoration(labelText:'Password',border:OutlineInputBorder()),onSubmitted:(_)=>authenticate(false)),const SizedBox(height:18),
@@ -141,7 +141,7 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
         const SizedBox(height:10),
         OutlinedButton(onPressed:busy?null:continueAsGuest,child:const Text('Continue as guest')),
         const SizedBox(height:6),
-        const Text('Guest progress is temporary. It is not uploaded or saved and will be lost when this session ends.',style:TextStyle(fontSize:12)),
+        const Text('Guest work is temporary. It is not uploaded or saved and will be lost when this session ends.',style:TextStyle(fontSize:12)),
       ]else FilledButton(onPressed:loadAccount,child:const Text('Retry loading my cloud workspace')),
       if(notice.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(notice)),if(error.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(error,style:const TextStyle(color:Colors.red))),
       const SizedBox(height:16),const Text('Internet is required. You will sign in again after reopening or refreshing the app.',style:TextStyle(fontSize:12)),
