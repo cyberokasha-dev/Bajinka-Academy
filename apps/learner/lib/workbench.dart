@@ -42,34 +42,140 @@ class PythonStudioHome extends StatelessWidget {
 }
 
 class ProjectManager extends StatefulWidget {
- const ProjectManager({super.key,required this.store});final LearnerStore store;
- @override State<ProjectManager> createState()=>_ProjectManagerState();
+ const ProjectManager({super.key, required this.store});
+ final LearnerStore store;
+ @override State<ProjectManager> createState() => _ProjectManagerState();
 }
-class _ProjectManagerState extends State<ProjectManager>{
- String filter='All';
- Future<void> edit([Map<String,dynamic>? old])async{
- final title=TextEditingController(text:old?['title']??'');final objective=TextEditingController(text:old?['objective']??'');final tech=TextEditingController(text:old?['technologies']??'');final url=TextEditingController(text:old?['url']??'');
- String category=old?['category']??'Python',status=old?['status']??'Idea';
- final r=await showDialog<Map<String,dynamic>>(context:context,builder:(ctx)=>StatefulBuilder(builder:(ctx,setD)=>AlertDialog(title:Text(old==null?'New project':'Edit project'),content:SizedBox(width:450,child:SingleChildScrollView(child:Column(mainAxisSize:MainAxisSize.min,children:[
- TextField(controller:title,decoration:const InputDecoration(labelText:'Project title')),
- TextField(controller:objective,minLines:2,maxLines:4,decoration:const InputDecoration(labelText:'Objective')),
- TextField(controller:tech,decoration:const InputDecoration(labelText:'Skills and technologies')),
- TextField(controller:url,decoration:const InputDecoration(labelText:'GitHub / demo URL')),
- DropdownButtonFormField(initialValue:category,decoration:const InputDecoration(labelText:'Category'),items:['Python','Cybersecurity','Other'].map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setD(()=>category=v??'Other')),
- DropdownButtonFormField(initialValue:status,decoration:const InputDecoration(labelText:'Status'),items:['Idea','Planning','Building','Testing','Completed'].map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setD(()=>status=v??'Idea'))
- ]))),actions:[TextButton(onPressed:()=>Navigator.pop(ctx),child:const Text('Cancel')),FilledButton(onPressed:()=>Navigator.pop(ctx,{'title':title.text.trim(),'objective':objective.text.trim(),'technologies':tech.text.trim(),'url':url.text.trim(),'category':category,'status':status}),child:const Text('Save'))])));
- title.dispose();objective.dispose();tech.dispose();url.dispose();
- if(r==null||r['title'].isEmpty)return;final p=_projects(widget.store);
- if(old==null){p.insert(0,{'id':DateTime.now().microsecondsSinceEpoch.toString(),...r});}else{final i=p.indexWhere((x)=>x['id']==old['id']);if(i>=0)p[i]={...p[i],...r};}
- _saveProjects(widget.store,p);if(mounted)setState((){});
+
+class _ProjectManagerState extends State<ProjectManager> {
+ String filter = 'All';
+
+ Future<void> edit([Map<String, dynamic>? old]) async {
+  final result = await showDialog<Map<String, dynamic>>(
+   context: context,
+   builder: (_) => _ProjectEditorDialog(project: old),
+  );
+  if (result == null || (result['title'] as String).isEmpty) return;
+
+  final projects = _projects(widget.store);
+  if (old == null) {
+   projects.insert(0, {'id': DateTime.now().microsecondsSinceEpoch.toString(), ...result});
+  } else {
+   final index = projects.indexWhere((project) => project['id'] == old['id']);
+   if (index >= 0) projects[index] = {...projects[index], ...result};
+  }
+  _saveProjects(widget.store, projects);
+  if (mounted) setState(() {});
  }
- @override Widget build(BuildContext c){final all=_projects(widget.store);final shown=all.where((p)=>filter=='All'||p['category']==filter).toList();return Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
- Row(children:[const Expanded(child:Text('Projects',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold))),FilledButton.icon(onPressed:()=>edit(),icon:const Icon(Icons.add),label:const Text('New project'))]),
- const SizedBox(height:8),const Text('Track practical work from idea to tested result. Records save in your existing account workspace.'),
- Wrap(spacing:8,children:['All','Python','Cybersecurity','Other'].map((v)=>ChoiceChip(label:Text(v),selected:filter==v,onSelected:(_)=>setState(()=>filter=v))).toList()),
- if(shown.isEmpty)const Padding(padding:EdgeInsets.all(20),child:Text('No projects yet.')),
- for(final p in shown)Card(elevation:0,child:ListTile(title:Text(p['title']??''),subtitle:Text('${p['category']} • ${p['status']}\n${p['objective']??''}\n${p['technologies']??''}'),isThreeLine:true,onTap:()=>edit(p),trailing:PopupMenuButton(onSelected:(v){if(v=='edit')edit(p);if(v=='delete'){final list=_projects(widget.store)..removeWhere((x)=>x['id']==p['id']);_saveProjects(widget.store,list);setState((){});}},itemBuilder:(_)=>const [PopupMenuItem(value:'edit',child:Text('Edit')),PopupMenuItem(value:'delete',child:Text('Delete'))])))
- ]);}
+
+ @override
+ Widget build(BuildContext context) {
+  final all = _projects(widget.store);
+  final shown = all.where((project) => filter == 'All' || project['category'] == filter).toList();
+  return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+   Row(children: [
+    const Expanded(child: Text('Projects', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold))),
+    FilledButton.icon(onPressed: () => edit(), icon: const Icon(Icons.add), label: const Text('New project')),
+   ]),
+   const SizedBox(height: 8),
+   const Text('Track practical work from idea to tested result. Records save in your existing account workspace.'),
+   Wrap(spacing: 8, children: ['All', 'Python', 'Cybersecurity', 'Other'].map((value) => ChoiceChip(
+    label: Text(value), selected: filter == value, onSelected: (_) => setState(() => filter = value),
+   )).toList()),
+   if (shown.isEmpty) const Padding(padding: EdgeInsets.all(20), child: Text('No projects yet.')),
+   for (final project in shown)
+    Card(elevation: 0, child: ListTile(
+     title: Text(project['title'] as String? ?? ''),
+     subtitle: Text('${project['category']} • ${project['status']}\n${project['objective'] ?? ''}\n${project['technologies'] ?? ''}'),
+     isThreeLine: true,
+     onTap: () => edit(project),
+     trailing: PopupMenuButton<String>(
+      onSelected: (value) {
+       if (value == 'edit') edit(project);
+       if (value == 'delete') {
+        final projects = _projects(widget.store)..removeWhere((item) => item['id'] == project['id']);
+        _saveProjects(widget.store, projects);
+        setState(() {});
+       }
+      },
+      itemBuilder: (_) => const [
+       PopupMenuItem(value: 'edit', child: Text('Edit')),
+       PopupMenuItem(value: 'delete', child: Text('Delete')),
+      ],
+     ),
+    )),
+  ]);
+ }
+}
+
+class _ProjectEditorDialog extends StatefulWidget {
+ const _ProjectEditorDialog({this.project});
+ final Map<String, dynamic>? project;
+ @override State<_ProjectEditorDialog> createState() => _ProjectEditorDialogState();
+}
+
+class _ProjectEditorDialogState extends State<_ProjectEditorDialog> {
+ late final TextEditingController title;
+ late final TextEditingController objective;
+ late final TextEditingController technologies;
+ late final TextEditingController url;
+ late String category;
+ late String status;
+
+ @override
+ void initState() {
+  super.initState();
+  final project = widget.project;
+  title = TextEditingController(text: project?['title'] as String? ?? '');
+  objective = TextEditingController(text: project?['objective'] as String? ?? '');
+  technologies = TextEditingController(text: project?['technologies'] as String? ?? '');
+  url = TextEditingController(text: project?['url'] as String? ?? '');
+  category = project?['category'] as String? ?? 'Python';
+  status = project?['status'] as String? ?? 'Idea';
+ }
+
+ @override
+ void dispose() {
+  title.dispose();
+  objective.dispose();
+  technologies.dispose();
+  url.dispose();
+  super.dispose();
+ }
+
+ @override
+ Widget build(BuildContext context) => AlertDialog(
+  title: Text(widget.project == null ? 'New project' : 'Edit project'),
+  content: SizedBox(width: 450, child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
+   TextField(controller: title, decoration: const InputDecoration(labelText: 'Project title')),
+   TextField(controller: objective, minLines: 2, maxLines: 4, decoration: const InputDecoration(labelText: 'Objective')),
+   TextField(controller: technologies, decoration: const InputDecoration(labelText: 'Skills and technologies')),
+   TextField(controller: url, decoration: const InputDecoration(labelText: 'GitHub / demo URL')),
+   DropdownButtonFormField<String>(
+    initialValue: category,
+    decoration: const InputDecoration(labelText: 'Category'),
+    items: ['Python', 'Cybersecurity', 'Other'].map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
+    onChanged: (value) { if (value != null) setState(() => category = value); },
+   ),
+   DropdownButtonFormField<String>(
+    initialValue: status,
+    decoration: const InputDecoration(labelText: 'Status'),
+    items: ['Idea', 'Planning', 'Building', 'Testing', 'Completed'].map((value) => DropdownMenuItem(value: value, child: Text(value))).toList(),
+    onChanged: (value) { if (value != null) setState(() => status = value); },
+   ),
+  ]))),
+  actions: [
+   TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+   FilledButton(onPressed: () => Navigator.pop(context, <String, dynamic>{
+    'title': title.text.trim(),
+    'objective': objective.text.trim(),
+    'technologies': technologies.text.trim(),
+    'url': url.text.trim(),
+    'category': category,
+    'status': status,
+   }), child: const Text('Save')),
+  ],
+ );
 }
 
 class CybersecurityLab extends StatefulWidget{

@@ -55,7 +55,7 @@ class _LearnerShellState extends State<LearnerShell> {
     super.initState(); store = widget.store ?? LearnerStore(); store.addListener(refresh); if(store.loading){unawaited(store.start().then((_) async { if (store.reminders) await resumeReminders(); }));}else if(store.reminders){unawaited(resumeReminders());}
   }
   void refresh() { if (mounted) setState(() {}); }
-  void select(String value) { setState(() { section = value; topic = null; selectedChapter = null; }); if (scroll.hasClients) scroll.jumpTo(0); }
+  void select(String value) { FocusManager.instance.primaryFocus?.unfocus(); setState(() { section = value; topic = null; selectedChapter = null; }); if (scroll.hasClients) scroll.jumpTo(0); }
   void openTopic(Topic value, {String activeTab = 'Learn'}) {
     setState(() { section = 'My Course'; topic = value; selectedChapter = value.chapter; tab = activeTab; note.text = store.draft(value.id)['notes'] as String? ?? ''; });
     unawaited(store.visit(value.id)); if (scroll.hasClients) scroll.jumpTo(0);
