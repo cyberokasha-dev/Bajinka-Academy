@@ -66,7 +66,7 @@ class _ProjectManagerState extends State<ProjectManager>{
  @override Widget build(BuildContext c){final all=_projects(widget.store);final shown=all.where((p)=>filter=='All'||p['category']==filter).toList();return Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
  Row(children:[const Expanded(child:Text('Projects',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold))),FilledButton.icon(onPressed:()=>edit(),icon:const Icon(Icons.add),label:const Text('New project'))]),
  const SizedBox(height:8),const Text('Track practical work from idea to tested result. Records save in your existing account workspace.'),
- Wrap(spacing:8,children:['All','Python','Cybersecurity','Other'].map((v)=>ChoiceChip(label:Text(v),selected:filter==v,onSelected:(_)=>setState(()=>filter=v)).toList()),
+ Wrap(spacing:8,children:['All','Python','Cybersecurity','Other'].map((v)=>ChoiceChip(label:Text(v),selected:filter==v,onSelected:(_)=>setState(()=>filter=v))).toList()),
  if(shown.isEmpty)const Padding(padding:EdgeInsets.all(20),child:Text('No projects yet.')),
  for(final p in shown)Card(elevation:0,child:ListTile(title:Text(p['title']??''),subtitle:Text('${p['category']} • ${p['status']}\n${p['objective']??''}\n${p['technologies']??''}'),isThreeLine:true,onTap:()=>edit(p),trailing:PopupMenuButton(onSelected:(v){if(v=='edit')edit(p);if(v=='delete'){final list=_projects(widget.store)..removeWhere((x)=>x['id']==p['id']);_saveProjects(widget.store,list);setState((){});}},itemBuilder:(_)=>const [PopupMenuItem(value:'edit',child:Text('Edit')),PopupMenuItem(value:'delete',child:Text('Delete'))])))
  ]);}
