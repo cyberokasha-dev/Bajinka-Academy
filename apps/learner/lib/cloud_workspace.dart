@@ -37,10 +37,11 @@ class CloudAccountGate extends StatefulWidget {
   @override State<CloudAccountGate> createState()=>_CloudAccountGateState();
 }
 class _CloudAccountGateState extends State<CloudAccountGate> {
-  final email=TextEditingController(),password=TextEditingController();
+  final email=TextEditingController(),password=TextEditingController(),guestName=TextEditingController();
   final client=Supabase.instance.client;
   StreamSubscription<AuthState>? subscription;
   LearnerStore? store;
+  LearnerStore? guestStore;
   String? owner;
   String error='',notice='';
   bool busy=false,loading=false;
@@ -59,6 +60,33 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
     if(next.loadFailed){next.dispose();owner=null;setState((){loading=false;error='Your cloud workspace could not load. Check your connection and retry.';});return;}
     setState((){store=next;loading=false;});
   }
+  Future<void> continueAsGuest() async {
+    if(busy)return;
+    final displayName=guestName.text.trim();
+    if(displayName.isEmpty){setState(()=>error='Enter your name to continue as a guest.');return;}
+    setState((){busy=true;error='';notice='';});
+    final temporary=LearnerStore(storage:MemoryStorage(),temporary:true);
+    try{
+      await temporary.start();
+      await temporary.preferences(displayName:displayName);
+      if(!mounted){temporary.dispose();return;}
+      setState(()=>guestStore=temporary);
+    }catch(_){
+      temporary.dispose();
+      if(mounted)setState(()=>error='Could not start a guest session. Please try again.');
+    }finally{if(mounted)setState(()=>busy=false);}
+  }
+  Future<void> sendPasswordReset() async {
+    final address=email.text.trim();
+    if(!address.contains('@')){setState(()=>error='Enter the email address linked to your account first.');return;}
+    setState((){busy=true;error='';notice='';});
+    try{
+      await client.auth.resetPasswordForEmail(address);
+      if(mounted)setState(()=>notice='If the address belongs to an account, Supabase will send a password reset email. Check your inbox and spam folder.');
+    }on AuthException catch(e){if(mounted)setState(()=>error=e.message);}
+    catch(_){if(mounted)setState(()=>error='Could not send the reset request. Check your connection and try again.');}
+    finally{if(mounted)setState(()=>busy=false);}
+  }
   Future<void> authenticate(bool create) async {
     if(busy)return;
     if(!email.text.trim().contains('@')||password.text.length<8){setState(()=>error='Enter your email and a password of at least eight characters.');return;}
@@ -72,6 +100,7 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
     finally{if(mounted)setState(()=>busy=false);}
   }
   @override Widget build(BuildContext context){
+    if(guestStore!=null)return widget.builder(guestStore!);
     if(loading)return const Scaffold(body:Center(child:CircularProgressIndicator()));
     if(store!=null&&client.auth.currentUser?.id==owner)return widget.builder(store!);
     return Scaffold(appBar:AppBar(title:const Text('Bajinka Academy')),body:Center(child:SingleChildScrollView(padding:const EdgeInsets.all(24),child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:440),child:Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
@@ -82,10 +111,19 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
         TextField(controller:password,obscureText:true,enableSuggestions:false,autocorrect:false,decoration:const InputDecoration(labelText:'Password',border:OutlineInputBorder()),onSubmitted:(_)=>authenticate(false)),const SizedBox(height:18),
         FilledButton(onPressed:busy?null:()=>authenticate(false),child:Text(busy?'Connecting…':'Sign in')),
         TextButton(onPressed:busy?null:()=>authenticate(true),child:const Text('Create my account')),
+        TextButton(onPressed:busy?null:sendPasswordReset,child:const Text('Forgot password?')),
+        const Divider(height:32),
+        const Text('Prefer not to create an account?',style:TextStyle(fontWeight:FontWeight.w600)),
+        const SizedBox(height:8),
+        TextField(controller:guestName,textCapitalization:TextCapitalization.words,autocorrect:false,decoration:const InputDecoration(labelText:'Your name',border:OutlineInputBorder())),
+        const SizedBox(height:10),
+        OutlinedButton(onPressed:busy?null:continueAsGuest,child:const Text('Continue as guest')),
+        const SizedBox(height:6),
+        const Text('Guest progress is temporary. It is not uploaded or saved and will be lost when this session ends.',style:TextStyle(fontSize:12)),
       ]else FilledButton(onPressed:loadAccount,child:const Text('Retry loading my cloud workspace')),
       if(notice.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(notice)),if(error.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(error,style:const TextStyle(color:Colors.red))),
       const SizedBox(height:16),const Text('Internet is required. You will sign in again after reopening or refreshing the app.',style:TextStyle(fontSize:12)),
     ])))));
   }
-  @override void dispose(){generation++;subscription?.cancel();email.dispose();password.dispose();super.dispose();}
+  @override void dispose(){generation++;subscription?.cancel();guestStore?.dispose();email.dispose();password.dispose();guestName.dispose();super.dispose();}
 }
