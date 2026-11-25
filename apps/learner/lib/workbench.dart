@@ -55,8 +55,8 @@ class _ProjectManagerState extends State<ProjectManager>{
  TextField(controller:objective,minLines:2,maxLines:4,decoration:const InputDecoration(labelText:'Objective')),
  TextField(controller:tech,decoration:const InputDecoration(labelText:'Skills and technologies')),
  TextField(controller:url,decoration:const InputDecoration(labelText:'GitHub / demo URL')),
- DropdownButtonFormField(value:category,decoration:const InputDecoration(labelText:'Category'),items:['Python','Cybersecurity','Other'].map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setD(()=>category=v??'Other')),
- DropdownButtonFormField(value:status,decoration:const InputDecoration(labelText:'Status'),items:['Idea','Planning','Building','Testing','Completed'].map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setD(()=>status=v??'Idea'))
+ DropdownButtonFormField(initialValue:category,decoration:const InputDecoration(labelText:'Category'),items:['Python','Cybersecurity','Other'].map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setD(()=>category=v??'Other')),
+ DropdownButtonFormField(initialValue:status,decoration:const InputDecoration(labelText:'Status'),items:['Idea','Planning','Building','Testing','Completed'].map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setD(()=>status=v??'Idea'))
  ]))),actions:[TextButton(onPressed:()=>Navigator.pop(ctx),child:const Text('Cancel')),FilledButton(onPressed:()=>Navigator.pop(ctx,{'title':title.text.trim(),'objective':objective.text.trim(),'technologies':tech.text.trim(),'url':url.text.trim(),'category':category,'status':status}),child:const Text('Save'))])));
  title.dispose();objective.dispose();tech.dispose();url.dispose();
  if(r==null||r['title'].isEmpty)return;final p=_projects(widget.store);
@@ -92,7 +92,7 @@ class _CybersecurityLabState extends State<CybersecurityLab>{
  @override Widget build(BuildContext c)=>Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
  const Text('Cybersecurity Lab',style:TextStyle(fontSize:28,fontWeight:FontWeight.bold)),const SizedBox(height:8),
  const Text('Fictional, local defensive simulations. No external systems are contacted and no real credentials or targets are used.'),
- DropdownButtonFormField(value:lab,decoration:const InputDecoration(labelText:'Select a lab'),items:tasks.keys.map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setState(()=>lab=v??'Network Builder')),
+ DropdownButtonFormField(initialValue:lab,decoration:const InputDecoration(labelText:'Select a lab'),items:tasks.keys.map((v)=>DropdownMenuItem(value:v,child:Text(v))).toList(),onChanged:(v)=>setState(()=>lab=v??'Network Builder')),
  const SizedBox(height:12),Text(lab,style:const TextStyle(fontSize:20,fontWeight:FontWeight.bold)),
  for(final t in tasks[lab]!)CheckboxListTile(dense:true,contentPadding:EdgeInsets.zero,value:checked.contains(t),title:Text(t),onChanged:(v)=>setState(()=>v==true?checked.add(t):checked.remove(t))),
  const SizedBox(height:12),const Text('Case notes',style:TextStyle(fontWeight:FontWeight.bold)),
