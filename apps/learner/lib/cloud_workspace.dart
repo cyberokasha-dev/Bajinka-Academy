@@ -102,12 +102,12 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
   Future<void> updateRecoveredPassword() async {
     if(newPassword.text.length<8){setState(()=>error='Use a password with at least eight characters.');return;}
     if(newPassword.text!=confirmNewPassword.text){setState(()=>error='The passwords do not match.');return;}
-    setState(()=>{busy=true,error='',notice=''});
+    setState((){busy=true;error='';notice='';});
     try{
       await client.auth.updateUser(UserAttributes(password:newPassword.text));
       newPassword.clear();confirmNewPassword.clear();
       await client.auth.signOut();
-      if(mounted)setState(()=>{recovering=false,notice='Your password has been updated. Sign in with your new password.'});
+      if(mounted)setState((){recovering=false;notice='Your password has been updated. Sign in with your new password.';});
     }on AuthException catch(e){if(mounted)setState(()=>error=e.message);}
     catch(_){if(mounted)setState(()=>error='Could not update your password. Open the reset link again and retry.');}
     finally{if(mounted)setState(()=>busy=false);}
@@ -120,7 +120,6 @@ class _CloudAccountGateState extends State<CloudAccountGate> {
     FilledButton(onPressed:busy?null:updateRecoveredPassword,child:Text(busy?'Updating…':'Update password')),
     if(error.isNotEmpty)Padding(padding:const EdgeInsets.only(top:12),child:Text(error,style:const TextStyle(color:Colors.red))),
   ])))));
-  }
   @override Widget build(BuildContext context){
     if(recovering)return passwordRecoveryScreen();
     if(guestStore!=null)return widget.builder(guestStore!);
