@@ -142,6 +142,7 @@ void main() {
     expect(restored.draft('wb-lab-network-builder')['notes'], contains('Firewall'));
     expect(restored.draft('workbench-python')['code'], 'print("workbench")');
     expect(restored.files['workbench-python']?['filename'], 'workbench-python-project-workbench-script.py');
+    expect(restored.files['workbench-python']?['category'], 'Project');
     store.dispose();
     restored.dispose();
   });
