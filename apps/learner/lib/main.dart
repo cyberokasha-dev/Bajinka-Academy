@@ -16,7 +16,7 @@ SemanticsHandle? accessibility;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   accessibility = SemanticsBinding.instance.ensureSemantics();
-  await Supabase.initialize(url:academySupabaseUrl,publishableKey:academySupabaseKey,authOptions:const FlutterAuthClientOptions(persistSession:false,localStorage:EmptyLocalStorage(),detectSessionInUri:false));
+  await Supabase.initialize(url:academySupabaseUrl,publishableKey:academySupabaseKey,authOptions:const FlutterAuthClientOptions(persistSession:false,localStorage:EmptyLocalStorage(),detectSessionInUri:true));
   runApp(const AcademyApp());
 }
 const teal = Color(0xff0eaaa7), navy = Color(0xff1e2e52), border = Color(0xffe0e3eb);
