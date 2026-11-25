@@ -26,5 +26,5 @@ class _PythonRunnerState extends State<PythonRunner> {
   }
   void send() => controller?.runJavaScript('window.academyInit(${jsonEncode(widget.config)})');
   @override void didUpdateWidget(covariant PythonRunner oldWidget) { super.didUpdateWidget(oldWidget); if (oldWidget.config['dark'] != widget.config['dark'] || oldWidget.config['revision'] != widget.config['revision'] || oldWidget.config['fileSavedAt'] != widget.config['fileSavedAt']) send(); }
-  @override Widget build(BuildContext context) => controller == null ? const Center(child: Text('The Python runner is available on web and Android.')) : WebViewWidget(controller: controller!);
+  @override Widget build(BuildContext context) => controller == null ? const Center(child: Text('The Python runner is available on web, Android and iOS.')) : WebViewWidget(controller: controller!);
 }

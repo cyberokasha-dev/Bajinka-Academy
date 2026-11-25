@@ -106,8 +106,7 @@ class LearnerStore extends ChangeNotifier {
   }
   Future<void> reloadCloud() async {await pending;await start();saveFailed=loadFailed;conflict=false;if(!loadFailed){for(final id in drafts.keys.toList()){drafts[id]={...drafts[id]!, 'editorRevision':'reload-${DateTime.now().microsecondsSinceEpoch}'};}}changed();}
   Future<void> saveFile(String workspaceId, {required String topicId, required String category, required String title, required String content, String input='', bool code=true}) async {
-    final topic=topicById(topicId);
-    files[workspaceId]={'workspaceId':workspaceId,'topic':topicId,'category':category,'title':title,'filename':workspaceFilename(topic,category,activity:title,code:code),'content':content,'input':input,'kind':code?'code':'answer','savedAt':DateTime.now().toIso8601String()};
+    files[workspaceId]={'workspaceId':workspaceId,'topic':topicId,'category':category,'title':title,'filename':workspaceFilenameFor(topicId,category,activity:title,code:code),'content':content,'input':input,'kind':code?'code':'answer','savedAt':DateTime.now().toIso8601String()};
     await save();
     if(saveFailed)throw const FormatException('File is not saved to Supabase yet. Keep the workspace open and retry.');
     savedFileAcks[workspaceId]=files[workspaceId]!['savedAt'] as String;changed();
@@ -159,8 +158,13 @@ class LearnerStore extends ChangeNotifier {
     if (DateTime.tryParse(decoded['startedAt'] as String) == null) throw const FormatException('Study date is invalid.');
     if (decoded['dark'] is! bool || decoded['reminders'] is! bool) throw const FormatException('Preferences are invalid.');
     final allowed = courseTopics.map((t) => t.id).toSet()..add('general')..add('opening-assessment')..addAll(exercises.map((e) => 'activity:${e.id}'));
+    bool validWorkspaceId(Object? value) {
+      if (value is! String) return false;
+      if (allowed.contains(value)) return true;
+      return RegExp(r'^(workbench|wb)-[a-z0-9]+(?:-[a-z0-9]+)*$').hasMatch(value);
+    }
     for (final entry in (decoded['drafts'] as Map).entries) {
-      if (!allowed.contains(entry.key) || entry.value is! Map) throw const FormatException('Unknown topic or invalid draft.');
+      if (!validWorkspaceId(entry.key) || entry.value is! Map) throw const FormatException('Unknown workspace or invalid draft.');
       for (final field in ['notes','code','input','response','editorRevision']) { if ((entry.value as Map)[field] != null && (entry.value as Map)[field] is! String) throw const FormatException('Draft text is invalid.'); }
       final shellTranscript = (entry.value as Map)['shellTranscript'];
       if(shellTranscript!=null && (shellTranscript is! String || shellTranscript.length>60000)) throw const FormatException('Shell transcript is invalid.');
@@ -175,7 +179,7 @@ class LearnerStore extends ChangeNotifier {
       if(savedFiles is! Map)throw const FormatException('Saved files are invalid.');
       for(final entry in savedFiles.entries){
         final f=entry.value;
-        if(!allowed.contains(entry.key)||f is! Map||f['workspaceId']!=entry.key||f['topic'] is! String||!courseTopics.any((t)=>t.id==f['topic'])||f['category'] is! String||f['title'] is! String||f['content'] is! String||f['input'] is! String||!['code','answer'].contains(f['kind'])||f['savedAt'] is! String||DateTime.tryParse(f['savedAt'])==null||f['filename'] is! String||!RegExp(r'^[a-z0-9-]+\.(py|txt)$').hasMatch(f['filename']))throw const FormatException('Saved file fields are invalid.');
+        if(!validWorkspaceId(entry.key)||f is! Map||f['workspaceId']!=entry.key||!validWorkspaceId(f['topic'])||f['category'] is! String||f['title'] is! String||f['content'] is! String||f['input'] is! String||!['code','answer'].contains(f['kind'])||f['savedAt'] is! String||DateTime.tryParse(f['savedAt'])==null||f['filename'] is! String||!RegExp(r'^[a-z0-9-]+\.(py|txt)$').hasMatch(f['filename']))throw const FormatException('Saved file fields are invalid.');
       }
     }
     final validExercises = exercises.map((e) => e.id).toSet()..add('opening-assessment');

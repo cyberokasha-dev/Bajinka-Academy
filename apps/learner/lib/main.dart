@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'course_content.dart';
+import 'workbench.dart';
 import 'learner_store.dart';
 import 'files_and_records.dart';
 import 'platform/runner.dart';
@@ -31,10 +32,10 @@ ThemeData academyTheme(bool dark) {
 class AcademyApp extends StatelessWidget {
   const AcademyApp({super.key, this.store});
   final LearnerStore? store;
-  @override Widget build(BuildContext context) => MaterialApp(title: 'Bajinka Python Academy', debugShowCheckedModeBanner: false, theme: academyTheme(false), home: store != null ? LearnerShell(store:store) : CloudAccountGate(builder:(store)=>LearnerShell(key:ValueKey(store),store:store)));
+  @override Widget build(BuildContext context) => MaterialApp(title: 'Bajinka Workbench', debugShowCheckedModeBanner: false, theme: academyTheme(false), home: store != null ? LearnerShell(store:store) : CloudAccountGate(builder:(store)=>LearnerShell(key:ValueKey(store),store:store)));
 }
-const sections = ['Home', 'My Course', 'Practice and Homework', 'Projects', 'Notebook', 'My Files', 'Assessments', 'Progress', 'Revision', 'Achievements and Certificates', 'Resources', 'Settings', 'Sources & Acknowledgements', 'Privacy Policy'];
-const sectionIcons = [Icons.dashboard_outlined, Icons.menu_book_outlined, Icons.edit_note, Icons.folder_outlined, Icons.description_outlined, Icons.folder_open_outlined, Icons.fact_check_outlined, Icons.insights_outlined, Icons.refresh, Icons.workspace_premium_outlined, Icons.link, Icons.settings_outlined, Icons.info_outline, Icons.privacy_tip_outlined];
+const sections = ['Dashboard', 'Python Studio', 'Cybersecurity Lab', 'Projects', 'Notebook', 'Portfolio', 'My Files', 'Career Hub', 'Reference Library', 'Settings', 'Sources & Acknowledgements', 'Privacy Policy'];
+const sectionIcons = [Icons.dashboard_outlined, Icons.code, Icons.security_outlined, Icons.folder_outlined, Icons.description_outlined, Icons.workspaces_outline, Icons.folder_open_outlined, Icons.work_outline, Icons.menu_book_outlined, Icons.settings_outlined, Icons.info_outline, Icons.privacy_tip_outlined];
 class LearnerShell extends StatefulWidget {
   const LearnerShell({super.key, this.store});
   final LearnerStore? store;
@@ -44,7 +45,7 @@ class _LearnerShellState extends State<LearnerShell> {
   final scaffold = GlobalKey<ScaffoldState>();
   final scroll = ScrollController();
   late final LearnerStore store;
-  String section = 'Home', tab = 'Learn', search = '';
+  String section = 'Dashboard', tab = 'Learn', search = '';
   Topic? topic;
   int? selectedChapter;
   final expandedChapters = <int>{0};
@@ -54,7 +55,7 @@ class _LearnerShellState extends State<LearnerShell> {
     super.initState(); store = widget.store ?? LearnerStore(); store.addListener(refresh); if(store.loading){unawaited(store.start().then((_) async { if (store.reminders) await resumeReminders(); }));}else if(store.reminders){unawaited(resumeReminders());}
   }
   void refresh() { if (mounted) setState(() {}); }
-  void select(String value) { setState(() { section = value; topic = null; selectedChapter = null; }); if (scroll.hasClients) scroll.jumpTo(0); }
+  void select(String value) { FocusManager.instance.primaryFocus?.unfocus(); setState(() { section = value; topic = null; selectedChapter = null; }); if (scroll.hasClients) scroll.jumpTo(0); }
   void openTopic(Topic value, {String activeTab = 'Learn'}) {
     setState(() { section = 'My Course'; topic = value; selectedChapter = value.chapter; tab = activeTab; note.text = store.draft(value.id)['notes'] as String? ?? ''; });
     unawaited(store.visit(value.id)); if (scroll.hasClients) scroll.jumpTo(0);
@@ -68,7 +69,8 @@ class _LearnerShellState extends State<LearnerShell> {
   Widget heading(String text) => Padding(padding: const EdgeInsets.only(bottom: 20), child: Text(text, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)));
   Widget panel(String title, String body, {VoidCallback? onTap, String label = 'Open', IconData? icon}) => Padding(padding: const EdgeInsets.symmetric(vertical: 8), child: surface(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [if (icon != null) ...[Icon(icon, size: 22, color: teal), const SizedBox(width: 12)], Expanded(child: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 19)))]), const SizedBox(height: 12), Text(body, style: const TextStyle(height: 1.6)), if (onTap != null) Padding(padding: const EdgeInsets.only(top: 8), child: TextButton(onPressed: onTap, child: Text(label)))])));
   Widget metric(String title, int value) => SizedBox(width: 170, child: surface(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('$value', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w700)), const SizedBox(height: 8), Text(title, style: TextStyle(color: muted))])));
-  Widget home() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+  Widget home() => WorkbenchDashboard(store: store, onOpen: select);
+  Widget legacyHome() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
     heading('Welcome back${store.name.isEmpty ? '' : ', ${store.name}'}'),
     Text('Your private Python study space. Learn at your own pace — no deadlines, no streak penalties.', style: TextStyle(fontSize: 16, color: muted)), const SizedBox(height: 28),
     panel('Continue learning', store.lastTopic == null ? starterTopics.first.title : topicById(store.lastTopic!).title, icon: Icons.school_outlined, onTap: () => openTopic(store.lastTopic == null ? starterTopics.first : topicById(store.lastTopic!)), label: 'Resume your last topic →'),
@@ -103,40 +105,88 @@ class _LearnerShellState extends State<LearnerShell> {
     ],
   ]);
   Widget codeBlock(String text) => Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: store.dark ? const Color(0xff101827) : const Color(0xffeef2f6), borderRadius: BorderRadius.circular(6)), child: Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[Align(alignment:Alignment.centerRight,child:TextButton.icon(onPressed:()=>action(() async { await Clipboard.setData(ClipboardData(text:text)); },success:'Code copied.'),icon:const Icon(Icons.copy,size:16),label:const Text('Copy code'))),SelectableText(text, style: const TextStyle(fontFamily: 'monospace', fontSize: 13, height: 1.6))]));
-  Widget notesEditor(String id) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [const Text('My Notes', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700)), const SizedBox(height: 12), TextField(key: ValueKey('notes-$id'), controller: note, minLines: 8, maxLines: 25, decoration: const InputDecoration(hintText: 'Explain it in your own words. Include a prediction, example, and what changed.', border: OutlineInputBorder()), onChanged: (value) => store.edit(id, notes: value)), const SizedBox(height: 12), Text(store.saveStatus, style: const TextStyle(fontSize: 12)), const SizedBox(height: 12), Wrap(spacing: 10, children: [FilledButton.icon(onPressed: store.save, icon: const Icon(Icons.save_outlined), label: const Text('Save on device')), OutlinedButton.icon(onPressed: () => action(() async { await downloadText('$id-notes.txt', note.text); }), icon: const Icon(Icons.download_outlined), label: const Text('Download notes')), TextButton(onPressed: () => action(() async { await Clipboard.setData(ClipboardData(text: note.text)); }, success: 'Copied.'), child: const Text('Copy'))])]);
+  Widget notesEditor(String id) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [Text(id == 'general' ? 'Notebook' : 'Notes', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700)), const SizedBox(height: 12), TextField(key: ValueKey('notes-$id'), controller: note, minLines: 8, maxLines: 25, decoration: const InputDecoration(hintText: 'Record project plans, decisions, research notes and what you learned.', border: OutlineInputBorder()), onChanged: (value) => store.edit(id, notes: value)), const SizedBox(height: 12), Text(store.saveStatus, style: const TextStyle(fontSize: 12)), const SizedBox(height: 12), Wrap(spacing: 10, children: [FilledButton.icon(onPressed: store.save, icon: const Icon(Icons.save_outlined), label: const Text('Save notes')), OutlinedButton.icon(onPressed: () => action(() async { await downloadText('$id-notes.txt', note.text); }), icon: const Icon(Icons.download_outlined), label: const Text('Download notes')), TextButton(onPressed: () => action(() async { await Clipboard.setData(ClipboardData(text: note.text)); }, success: 'Copied.'), child: const Text('Copy'))])]);
   Widget codeWorkspace(Topic value) => Column(children: [
     Align(alignment:Alignment.centerLeft,child:OutlinedButton.icon(onPressed:()=>action(() async {final source=await pickText(['py']);if(source==null||!mounted)return;final current=store.draft(value.id)['code'] as String? ?? '';if(current.trim().isNotEmpty){final replace=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Replace this code draft?'),content:const Text('Download your current Python file first if you want to keep both.'),actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Cancel')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Replace draft'))]));if(replace!=true)return;}store.edit(value.id,code:source,revision:'${DateTime.now().microsecondsSinceEpoch}');}),icon:const Icon(Icons.file_open_outlined),label:const Text('Import Python file'))),
     Align(alignment: Alignment.centerRight, child: TextButton.icon(onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => FullRunner(title: value.title, store: store, draftId: value.id, initial: value.example))).then((_){if(mounted)store.edit(value.id,revision:'view-${DateTime.now().microsecondsSinceEpoch}');}), icon: const Icon(Icons.open_in_full), label: const Text('Full-screen workspace'))),
     RunnerPanel(key: ValueKey('topic-runner-${value.id}'), store: store, draftId: value.id, initial: value.example),
   ]);
-  Widget notebook() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Notebook'), TextField(decoration: const InputDecoration(prefixIcon: Icon(Icons.search), labelText: 'Search notes', border: OutlineInputBorder()), onChanged: (v) => setState(() { search = v.toLowerCase(); })), const SizedBox(height: 16),
-    panel('General notebook', 'A place for ideas that belong to more than one topic.', onTap: () { setState(() { topic = null; note.text = store.draft('general')['notes'] as String? ?? ''; section = 'General notes'; }); }, label: 'Open general notes →'),
-    if (store.notesCount == 0) panel('Start your first topic note', 'Open a topic and choose My Notes.', onTap: () => select('My Course'), label: 'Browse topics →'),
-    for (final t in courseTopics) if ((store.draft(t.id)['notes'] as String? ?? '').isNotEmpty && (search.isEmpty || '${t.title} ${store.draft(t.id)['notes']}'.toLowerCase().contains(search))) panel(t.title, store.draft(t.id)['notes'] as String, onTap: () => openTopic(t, activeTab: 'My Notes'), label: 'Edit note →'),
+  Widget notebook() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+    heading('Notebook'),
+    panel('General notes', 'Keep project plans, decisions, research notes and ideas here. More structured notes with tags and project links are a later addition.', onTap: () {
+      note.text = store.draft('general')['notes'] as String? ?? '';
+      select('General notes');
+    }, label: 'Open notebook →'),
+    if ((store.draft('general')['notes'] as String? ?? '').trim().isNotEmpty)
+      panel('Latest notes', store.draft('general')['notes'] as String),
   ]);
   Future<void> openSavedFile(Map<String,dynamic> file) async {
-    final id=file['workspaceId'] as String,t=topicById(file['topic'] as String),content=file['content'] as String;
-    final current=store.draft(id)[file['kind']=='code'?'code':'response'] as String? ?? '';
-    if(current.isNotEmpty && current!=content){
-      final accept=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Open this saved version?'),content:const Text('This replaces the current workspace draft. Save the current version in My Files first if you need to keep it.'),actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Keep current draft')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Open saved version'))]));
-      if(accept!=true)return;
+    final id = file['workspaceId'] as String;
+    final content = file['content'] as String;
+    final isCode = file['kind'] == 'code';
+    final current = store.draft(id)[isCode ? 'code' : 'response'] as String? ?? '';
+    if (current.isNotEmpty && current != content) {
+      final accept = await showDialog<bool>(
+        context: context,
+        builder: (c) => AlertDialog(
+          title: const Text('Open this saved version?'),
+          content: const Text('This replaces the current workspace draft. Save the current version in My Files first if you need to keep it.'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Keep current draft')),
+            TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Open saved version')),
+          ],
+        ),
+      );
+      if (accept != true) return;
     }
-    store.edit(id,code:file['kind']=='code'?content:null,response:file['kind']=='answer'?content:null,input:file['input'] as String,revision:'file-${DateTime.now().microsecondsSinceEpoch}');
-    if(!mounted)return;
-    openTopic(t,activeTab:id.startsWith('activity:')?file['category'] as String:'My Code');
+    if (isCode) {
+      store.edit(id, code: content, input: file['input'] as String? ?? '', revision: 'file-${DateTime.now().microsecondsSinceEpoch}');
+      if (!mounted) return;
+      await Navigator.push(context, MaterialPageRoute<void>(builder: (_) => FullRunner(
+        title: file['filename'] as String,
+        store: store,
+        draftId: id,
+        initial: content,
+      )));
+      return;
+    }
+    if (!mounted) return;
+    await showDialog<void>(
+      context: context,
+      builder: (c) => AlertDialog(
+        title: Text(file['filename'] as String),
+        content: SizedBox(width: 520, child: SingleChildScrollView(child: SelectableText(content))),
+        actions: [TextButton(onPressed: () => Navigator.pop(c), child: const Text('Close'))],
+      ),
+    );
   }
   Widget fileLibrary() {
-    final saved=store.files.values.where((f)=>search.isEmpty||'${f['filename']} ${f['category']}'.toLowerCase().contains(search)).toList();
-    return Column(crossAxisAlignment:CrossAxisAlignment.stretch,children:[heading('My Files'),panel('Saved in your academy account','Save in app stores a named version here. Run checks code and keeps the workspace draft; it does not download a file. Download is a separate action you choose.'),TextField(decoration:const InputDecoration(prefixIcon:Icon(Icons.search),labelText:'Find a saved file',border:OutlineInputBorder()),onChanged:(v)=>setState(()=>search=v.toLowerCase())),const SizedBox(height:20),
-      if(saved.isEmpty)panel('No matching saved files','Open a topic or activity, then choose Save in app. Your working drafts remain available in their own topic workspaces.'),
-      for(var ch=0;ch<chapters.length;ch++) if(saved.any((f)=>topicById(f['topic'] as String).chapter==ch)) ...[
-        heading('$ch. ${chapters[ch]}'),
-        for(final t in courseTopics.where((t)=>t.chapter==ch)) if(saved.any((f)=>f['topic']==t.id)) ...[
-          Text(t.title,style:const TextStyle(fontSize:18,fontWeight:FontWeight.w700)),const SizedBox(height:8),
-          for(final category in ['Practice','Classwork','Homework','Challenge','Project','Assessment']) for(final f in saved.where((f)=>f['topic']==t.id&&f['category']==category)) ListTile(contentPadding:EdgeInsets.zero,leading:Icon(f['kind']=='code'?Icons.code:Icons.description_outlined,color:teal),title:Text(f['filename'] as String),subtitle:Text('${f['category']} • ${store.savedFileAcks[f['workspaceId']]!=f['savedAt']?'Pending cloud save':f['savedAt']}'),onTap:()=>action(()=>openSavedFile(f)),trailing:IconButton(tooltip:'Download this saved file',icon:const Icon(Icons.download_outlined),onPressed:()=>action(() async{await downloadText(f['filename'] as String,f['content'] as String);}))),
-          const SizedBox(height:16),
-        ],
-      ],
+    final saved = store.files.values
+        .where((f) => search.isEmpty || '${f['filename']} ${f['category']}'.toLowerCase().contains(search))
+        .toList()
+      ..sort((a, b) => (b['savedAt'] as String).compareTo(a['savedAt'] as String));
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      heading('My Files'),
+      panel('Saved workspaces', 'Save in app stores a named Python or text version in this list. Running code, saving a version and downloading a file are separate actions.'),
+      TextField(
+        decoration: const InputDecoration(prefixIcon: Icon(Icons.search), labelText: 'Find a saved file', border: OutlineInputBorder()),
+        onChanged: (value) => setState(() => search = value.toLowerCase()),
+      ),
+      const SizedBox(height: 16),
+      if (saved.isEmpty) panel('No saved files yet', 'Open Python Studio, run or edit code, then use Save in app to add a version here.'),
+      for (final file in saved)
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(file['kind'] == 'code' ? Icons.code : Icons.description_outlined, color: teal),
+          title: Text(file['filename'] as String),
+          subtitle: Text('${file['category']} • ${store.savedFileAcks[file['workspaceId']] == file['savedAt'] ? 'Saved' : 'Save pending'} • ${file['savedAt']}'),
+          onTap: () => action(() => openSavedFile(file)),
+          trailing: IconButton(
+            tooltip: 'Download this saved file',
+            icon: const Icon(Icons.download_outlined),
+            onPressed: () => action(() async { await downloadText(file['filename'] as String, file['content'] as String); }),
+          ),
+        ),
     ]);
   }
   Widget practice({bool projectOnly = false}) => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading(projectOnly ? 'Projects' : 'Practice and Homework'), panel('Your activity workspaces', 'Each activity has its own saved code or answer. Coding checks use that activity’s inputs and expected results. Answers are checked against that activity’s own requirements and accepted responses.'),
@@ -165,26 +215,26 @@ class _LearnerShellState extends State<LearnerShell> {
   Widget resourceList() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Resources'), for (final resource in const [
     ['Python Tutorial','https://docs.python.org/3/tutorial/','Core language explanations and examples.'], ['Python built-in functions','https://docs.python.org/3/library/functions.html','Reference for print, input, int and other functions.'], ['Python language reference','https://docs.python.org/3/reference/','Precise syntax and language behaviour.'], ['Pyodide documentation','https://pyodide.org/en/stable/usage/','The browser Python runtime used by the workspace.'],
   ]) panel(resource[0], resource[2], onTap: () => action(() async { if (!await launchUrl(Uri.parse(resource[1]), mode: LaunchMode.externalApplication)) throw const FormatException('Resource could not be opened.'); }), label: 'Open reference ↗')]);
-  Widget settings() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Settings'), panel('Cloud workspace', 'Your signed-in account stores your work in Supabase. Work and login credentials are not kept in browser or app storage. Internet is required to load and save. Sign in again when reopening the app.'), panel('Your name', store.name.isEmpty ? 'Choose a name for your dashboard and study records.' : store.name, onTap: confirmName, label: 'Edit name'),
+  Widget settings() => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Settings'), panel('Cloud workspace', 'Your signed-in account stores your work in Supabase. Work and login credentials are not kept in browser or app storage. Internet is required to load and save. Sign in again when reopening the app.'), panel('Your profile', store.name.isEmpty ? 'Choose a display name for your dashboard.' : store.name, onTap: confirmName, label: 'Edit name'),
     SwitchListTile(title: const Text('Dark mode'), value: store.dark, onChanged: (v) => store.preferences(night: v)), ListTile(title: const Text('Reading text size'), subtitle: Slider(value: store.textScale, min: 1, max: 1.4, divisions: 4, label: '${(store.textScale*100).round()}%', onChanged: (v) => store.preferences(scale: v))),
-    SwitchListTile(title: const Text('Study reminders'), subtitle: const Text('Android: a daily local reminder. Web: every 30 minutes while this page remains open. Permission is requested only when enabled.'), value: store.reminders, onChanged: (v) => action(() async { if (v) { final result = await enableReminders(); if (!mounted) return; toast(result); await store.preferences(reminder: result.startsWith('Daily reminders enabled') || result.startsWith('Reminders enabled')); } else { await disableReminders(); await store.preferences(reminder: false); } })),
-    const SizedBox(height: 20), panel('Backup and restore', 'Download a JSON backup containing your notes, code, attempts, revision queue and preferences. Keep it private. Restore validates the file before replacing this device record.'), Wrap(spacing: 12, runSpacing: 8, children: [FilledButton.icon(onPressed: () => action(() async { await store.pending; await downloadText('Bajinka-learning-backup.json', store.exportBackup()); }), icon: const Icon(Icons.download), label: const Text('Download backup')), OutlinedButton.icon(onPressed: () => action(() async {
+    SwitchListTile(title: const Text('Work reminders'), subtitle: const Text('Android: a daily local reminder. Web: every 30 minutes while this page remains open. Permission is requested only when enabled.'), value: store.reminders, onChanged: (v) => action(() async { if (v) { final result = await enableReminders(); if (!mounted) return; toast(result); await store.preferences(reminder: result.startsWith('Daily reminders enabled') || result.startsWith('Reminders enabled')); } else { await disableReminders(); await store.preferences(reminder: false); } })),
+    const SizedBox(height: 20), panel('Backup and restore', 'Download a JSON backup of your projects, Python code and inputs, investigation notes and checklists, notebook, saved files and account records. Keep it private. Restore validates the file before replacing this workbench record.'), Wrap(spacing: 12, runSpacing: 8, children: [FilledButton.icon(onPressed: () => action(() async { await store.pending; await downloadText('Bajinka-workbench-backup.json', store.exportBackup()); }), icon: const Icon(Icons.download), label: const Text('Download backup')), OutlinedButton.icon(onPressed: () => action(() async {
       final text = await pickText(['json']); if (text == null) return; LearnerStore.validateBackup(text); if (!mounted) return;
-      final accept = await showDialog<bool>(context: context, builder: (c) => AlertDialog(title: const Text('Restore this backup?'), content: const Text('It replaces your account’s saved cloud learning record. Download your current work first.'), actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Restore'))]));
+      final accept = await showDialog<bool>(context: context, builder: (c) => AlertDialog(title: const Text('Restore this backup?'), content: const Text('It replaces your saved workbench data. Download your current work first.'), actions: [TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')), TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Restore'))]));
       if (accept == true) { await store.restore(text); if (mounted) toast('Backup restored.'); }
     }), icon: const Icon(Icons.upload_file), label: const Text('Restore backup'))]),
-    const SizedBox(height:24), OutlinedButton.icon(onPressed:()=>action(() async {final remove=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Clear my cloud learning record?'),content:const Text('This clears your account’s saved name, notes, code, terminal history, attempts, progress and study records in Supabase. Download a backup first. This cannot be undone without your backup.'),actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Keep my learning')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Clear cloud learning'))]));if(remove!=true)return;await disableReminders();await store.clearDeviceRecord();if(mounted){select('Home');toast('Cloud learning record cleared. Your downloaded backups are unchanged.');}}),icon:const Icon(Icons.delete_outline),label:const Text('Clear my cloud learning record')),
+    const SizedBox(height:24), OutlinedButton.icon(onPressed:()=>action(() async {final remove=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Clear all workbench data?'),content:const Text('This clears the saved workbench record for your account, including projects, code, notes, files and preferences. Download a backup first. This cannot be undone without your backup.'),actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Keep my data')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Clear workbench data'))]));if(remove!=true)return;await disableReminders();await store.clearDeviceRecord();if(mounted){select('Dashboard');toast('Workbench data cleared. Your downloaded backups are unchanged.');}}),icon:const Icon(Icons.delete_outline),label:const Text('Clear workbench data')),
   ]);
   Widget body() => switch(section) {
-    'Home' => home(), 'My Course' => topic == null ? course() : lesson(), 'Practice and Homework' => practice(), 'Projects' => practice(projectOnly: true), 'Notebook' => notebook(), 'My Files' => fileLibrary(), 'General notes' => notesEditor('general'), 'Assessments' => assessment(), 'Progress' => progressPage(), 'Revision' => revision(), 'Achievements and Certificates' => certificates(), 'Resources' => resourceList(), 'Settings' => settings(),
-    'Sources & Acknowledgements' => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Sources & Acknowledgements'), panel('Course content', 'Functions and Variables adapts material supplied by the academy owner, with corrected explanations and questions. Conditionals is independently authored for the existing outline. Reference links do not imply university endorsement.'), panel('Course sequence', 'The broad chapter sequence follows the public CS50P-inspired course map already used by this project. Harvard, Helsinki, MIT and Beijing Institute of Technology are reference candidates for later content review. The academy is independent and these institutions do not endorse its study records.'), panel('Software acknowledgements', 'Python is developed by the Python community. Pyodide runs Python in the local workspace. Flutter provides the learner interface. Their names and documentation links identify the tools used; no university qualification is claimed.'), resourceList()]),
-    'Privacy Policy' => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Data and privacy information'), panel('What this release stores', 'Your account identity is managed by Supabase Auth. Your name, notes, Python code, inputs, terminal transcript and history, attempts, progress and preferences are stored in your account’s Supabase workspace. Row access rules restrict the workspace to your signed-in user. The app does not persist learning data or login sessions locally. Editing and Python execution use temporary device memory; unsaved changes are lost if you close the app.'), panel('Code execution and third parties', 'Python executes in a worker on your device. Loading its runtime contacts jsDelivr to download Pyodide files, so that provider receives ordinary network request information. Opening a reference link visits its external website. No advertising or billing is enabled in this release.'), panel('Your controls', 'Download notes, Python files and a full JSON backup in Settings. Backups contain your private learning work. Remove the local record in Settings using Clear my cloud learning record, or through browser site-storage controls or Android app storage settings. Uninstalling or clearing storage can remove unsaved backups. Notification permission is optional and can be revoked in device or browser settings.'), panel('Publication details pending', 'Operator contact details and the final reviewed policy for public release, retention and support must be supplied before those services launch. This page describes the current device workspace.')]),
+    'Dashboard' => home(), 'Python Studio' => PythonStudioHome(store: store, onLaunch: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => FullRunner(title: 'Python Studio', store: store, draftId: 'workbench-python', initial: store.draft('workbench-python')['code'] as String? ?? '')))), 'Cybersecurity Lab' => CybersecurityLab(store: store), 'Projects' => ProjectManager(store: store), 'Notebook' => notebook(), 'Portfolio' => PortfolioHome(store: store), 'My Files' => fileLibrary(), 'Career Hub' => const CareerHub(), 'Reference Library' => resourceList(), 'General notes' => notesEditor('general'), 'Settings' => settings(),
+    'Sources & Acknowledgements' => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Sources & Acknowledgements'), panel('Technical references', 'The Reference Library currently links to the official Python language and Pyodide documentation. These sources explain the runtime and language used by Python Studio.'), panel('Software acknowledgements', 'Python and Pyodide provide the browser-based Python runtime. Flutter and Dart provide the application framework and language. Supabase provides account authentication and workspace storage. The app is an independent project and does not claim endorsement by these providers.'), resourceList()]),
+    'Privacy Policy' => Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [heading('Data and privacy information'), panel('What this release stores', 'When signed in, the app loads and saves your workbench record through your Supabase account. This record can include your display name, project details, Python code and inputs, investigation notes and checklists, general notes, saved text/Python files and preferences. Guest sessions are temporary and are not uploaded. Unsaved edits can be lost if the app closes before the save completes.'), panel('Code execution and third parties', 'Python code runs in a browser worker using Pyodide. The runtime files are downloaded from jsDelivr, which receives ordinary network request information. Opening a reference or project URL contacts that external website. Do not put passwords, private keys, personal information or real client data into practice work.'), panel('Your controls', 'Settings provides a JSON workbench backup and a control to clear the current workbench record. Backups can contain private code, notes and project details; store them securely. Guest work is temporary. Notification permission is optional and can be revoked in device or browser settings.'), panel('Publication details pending', 'Operator contact details, retention periods and support arrangements still need review before public release. This page describes the current application behaviour and is not legal advice.')]),
     _ => home(),
   };
   @override Widget build(BuildContext context) => Theme(data: academyTheme(store.dark), child: Builder(builder: (context) => MediaQuery(data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(store.textScale)), child: Scaffold(key: scaffold,
-    appBar: AppBar(centerTitle: true, toolbarHeight: 60, title: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.school_outlined, color: teal, size: 20), SizedBox(width: 8), Flexible(child: Text('Bajinka Python Academy', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)))]), bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1)), actions: [if(store.cloud) IconButton(tooltip:'Sign out',icon:const Icon(Icons.logout,size:20),onPressed:()=>action(() async {await store.pending;if(store.saveFailed){throw const FormatException('Save your work before signing out.');}await disableReminders();await Supabase.instance.client.auth.signOut();})),IconButton(tooltip: store.dark ? 'Light mode' : 'Dark mode', onPressed: () => store.preferences(night: !store.dark), icon: Icon(store.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20))]),
-    drawer: Drawer(shape: const RoundedRectangleBorder(), child: ListView(children: [const Padding(padding: EdgeInsets.all(24), child: Text('Bajinka Python Academy', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18))), for (var i = 0; i < sections.length; i++) ListTile(leading: Icon(sectionIcons[i], size: 20), selected: section == sections[i], selectedTileColor: teal.withValues(alpha: .08), title: Text(sections[i] == 'Home' ? 'Dashboard' : sections[i]), onTap: () { search = ''; select(sections[i]); scaffold.currentState?.closeDrawer(); })])),
-    body: SingleChildScrollView(controller: scroll, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 28), child: Align(alignment: Alignment.topCenter, child: ConstrainedBox(constraints: BoxConstraints(maxWidth: section == 'Home' || (section == 'My Course' && tab == 'My Code') ? 1200 : 736), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if(store.cloud) Padding(padding:const EdgeInsets.only(bottom:12),child:Text(store.saveStatus,style:TextStyle(color:store.saveFailed?Colors.red:teal,fontSize:12))),if (store.message.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(store.message)),if(store.cloud&&store.saveFailed) Wrap(spacing:12,children:[if(!store.conflict) TextButton(onPressed:store.save,child:const Text('Retry cloud save')),if(store.conflict) TextButton(onPressed:()=>action(() async {final accept=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Load the newer cloud copy?'),content:const Text('This replaces your current unsaved edits. Download your current work first from Settings.'),actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Keep my edits')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Load cloud copy'))]));if(accept==true){await store.reloadCloud();if(mounted&&topic!=null)note.text=store.draft(topic!.id)['notes'] as String? ?? '';}}),child:const Text('Reload cloud copy'))]),body(), const SizedBox(height: 48), const Divider(), Wrap(spacing: 16, children: [TextButton(onPressed: () => select('Sources & Acknowledgements'), child: const Text('Sources & Acknowledgements')), TextButton(onPressed: () => select('Privacy Policy'), child: const Text('Privacy Policy'))])])))),
+    appBar: AppBar(centerTitle: true, toolbarHeight: 60, title: const Row(mainAxisSize: MainAxisSize.min, children: [Icon(Icons.dashboard_outlined, color: teal, size: 20), SizedBox(width: 8), Flexible(child: Text('Bajinka Workbench', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)))]), bottom: const PreferredSize(preferredSize: Size.fromHeight(1), child: Divider(height: 1)), actions: [if(store.cloud) IconButton(tooltip:'Sign out',icon:const Icon(Icons.logout,size:20),onPressed:()=>action(() async {await store.pending;if(store.saveFailed){throw const FormatException('Save your work before signing out.');}await disableReminders();await Supabase.instance.client.auth.signOut();})),IconButton(tooltip: store.dark ? 'Light mode' : 'Dark mode', onPressed: () => store.preferences(night: !store.dark), icon: Icon(store.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined, size: 20))]),
+    drawer: Drawer(shape: const RoundedRectangleBorder(), child: ListView(children: [const Padding(padding: EdgeInsets.all(24), child: Text('Bajinka Workbench', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18))), for (var i = 0; i < sections.length; i++) ListTile(leading: Icon(sectionIcons[i], size: 20), selected: section == sections[i], selectedTileColor: teal.withValues(alpha: .08), title: Text(sections[i] == 'Home' ? 'Dashboard' : sections[i]), onTap: () { search = ''; select(sections[i]); scaffold.currentState?.closeDrawer(); })])),
+    body: SingleChildScrollView(controller: scroll, padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 28), child: Align(alignment: Alignment.topCenter, child: ConstrainedBox(constraints: BoxConstraints(maxWidth: section == 'Dashboard' || section == 'Python Studio' || (section == 'My Course' && tab == 'My Code') ? 1200 : 736), child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [if (store.loading) const LinearProgressIndicator(), if(store.cloud) Padding(padding:const EdgeInsets.only(bottom:12),child:Text(store.saveStatus,style:TextStyle(color:store.saveFailed?Colors.red:teal,fontSize:12))),if (store.message.isNotEmpty) Padding(padding: const EdgeInsets.only(bottom: 16), child: Text(store.message)),if(store.cloud&&store.saveFailed) Wrap(spacing:12,children:[if(!store.conflict) TextButton(onPressed:store.save,child:const Text('Retry cloud save')),if(store.conflict) TextButton(onPressed:()=>action(() async {final accept=await showDialog<bool>(context:context,builder:(c)=>AlertDialog(title:const Text('Load the newer cloud copy?'),content:const Text('This replaces your current unsaved edits. Download your current work first from Settings.'),actions:[TextButton(onPressed:()=>Navigator.pop(c,false),child:const Text('Keep my edits')),TextButton(onPressed:()=>Navigator.pop(c,true),child:const Text('Load cloud copy'))]));if(accept==true){await store.reloadCloud();if(mounted&&topic!=null)note.text=store.draft(topic!.id)['notes'] as String? ?? '';}}),child:const Text('Reload cloud copy'))]),body(), const SizedBox(height: 48), const Divider(), Wrap(spacing: 16, children: [TextButton(onPressed: () => select('Sources & Acknowledgements'), child: const Text('Sources & Acknowledgements')), TextButton(onPressed: () => select('Privacy Policy'), child: const Text('Privacy Policy'))])])))),
   ))));
   @override void dispose() { store.removeListener(refresh); store.dispose(); scroll.dispose(); note.dispose(); nameController.dispose(); super.dispose(); }
 }
@@ -198,17 +248,17 @@ class RunnerPanel extends StatelessWidget {
   final bool helpUsed, fullscreen;
   @override Widget build(BuildContext context) => ListenableBuilder(listenable:store,builder:(context,_) {
     final draft = store.draft(draftId);
-    return SizedBox(height: fullscreen ? height : (MediaQuery.sizeOf(context).height * .85).clamp(360.0, height).toDouble(), child: PythonRunner(key: ValueKey('runner-$draftId'), config: {'code':draft['codeEdited'] == true || (draft['code'] as String? ?? '').isNotEmpty ? draft['code'] : initial, 'input':draft['input'] ?? '', 'tests':exercise?.tests ?? [], 'dark':store.dark, 'revision':draft['editorRevision'], 'lastRun':draft['lastRun'], 'workspaceId':draftId, 'activityId':exercise?.id, 'activityTitle':exercise?.title, 'shellHistory':draft['shellHistory'] ?? <String>[], 'shellTranscript':draft['shellTranscript'] ?? '', 'fullscreen':fullscreen, 'filename':workspaceFilename(topicById(exercise?.topic ?? draftId),exercise?.category ?? 'Practice',activity:exercise?.title ?? ''), 'category':exercise?.category ?? 'Practice', 'fileSavedAt':store.savedFileAcks[draftId]}, onMessage: (m) {
+    return SizedBox(height: fullscreen ? height : (MediaQuery.sizeOf(context).height * .85).clamp(360.0, height).toDouble(), child: PythonRunner(key: ValueKey('runner-$draftId'), config: {'code':draft['codeEdited'] == true || (draft['code'] as String? ?? '').isNotEmpty ? draft['code'] : initial, 'input':draft['input'] ?? '', 'tests':exercise?.tests ?? [], 'dark':store.dark, 'revision':draft['editorRevision'], 'lastRun':draft['lastRun'], 'workspaceId':draftId, 'activityId':exercise?.id, 'activityTitle':exercise?.title, 'shellHistory':draft['shellHistory'] ?? <String>[], 'shellTranscript':draft['shellTranscript'] ?? '', 'fullscreen':fullscreen, 'filename':workspaceFilenameFor(exercise?.topic ?? draftId,exercise?.category ?? 'Project',activity:exercise?.title ?? ''), 'category':exercise?.category ?? 'Project', 'fileSavedAt':store.savedFileAcks[draftId]}, onMessage: (m) {
       if(m['workspaceId'] != draftId) return;
       if(m['type']=='shell-state' && m['history'] is List) store.edit(draftId,shellHistory:List<String>.from(m['history']),shellTranscript:m['transcript'] as String? ?? '');
       if(m['type']=='fullscreen') Navigator.push(context,MaterialPageRoute<void>(builder:(_)=>FullRunner(title:exercise?.title ?? 'Python workspace',store:store,draftId:draftId,initial:initial,exercise:exercise))).then((_){store.edit(draftId,revision:'view-${DateTime.now().microsecondsSinceEpoch}');});
       if (m['type'] == 'draft') store.edit(draftId, code:m['code'] as String? ?? '', input:m['input'] as String? ?? '');
       if (m['type'] == 'result' && exercise != null) unawaited(store.recordAttempt(exercise!, Map<String, dynamic>.from(m['result']), answer:m['code'] as String? ?? '', helpUsed:helpUsed));
-      if(m['type']=='save-file') unawaited(() async {try{store.edit(draftId,code:m['code'] as String? ?? '',input:m['input'] as String? ?? '');await store.saveFile(draftId,topicId:exercise?.topic ?? draftId,category:exercise?.category ?? 'Practice',title:exercise?.title ?? '',content:m['code'] as String? ?? '',input:m['input'] as String? ?? '');if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Saved in My Files.')));}catch(_){if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Cloud save failed. Keep this workspace open and retry.')));}}());
+      if(m['type']=='save-file') unawaited(() async {try{store.edit(draftId,code:m['code'] as String? ?? '',input:m['input'] as String? ?? '');await store.saveFile(draftId,topicId:exercise?.topic ?? draftId,category:exercise?.category ?? 'Project',title:exercise?.title ?? '',content:m['code'] as String? ?? '',input:m['input'] as String? ?? '');if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Saved in My Files.')));}catch(_){if(context.mounted)ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text('Cloud save failed. Keep this workspace open and retry.')));}}());
       if (m['type'] == 'clear') store.edit(draftId,lastRun:{'output':'','error':'','prompts':<String>[],'code':draft['code'] as String? ?? '', 'cleared':true,'recordedAt':DateTime.now().toIso8601String()});
       if (m['type'] == 'run' && m['runtime'] is Map) store.edit(draftId,lastRun:{...Map<String,dynamic>.from(m['runtime']), 'code':m['code'] as String? ?? '', 'recordedAt':DateTime.now().toIso8601String()});
       if (m['type'] == 'run' && m['success'] == true) { final id = exercise?.topic ?? draftId; unawaited(store.mark(id, 'practised', true)); }
-      if (m['type'] == 'download') unawaited(downloadText(workspaceFilename(topicById(exercise?.topic ?? draftId),exercise?.category ?? 'Practice',activity:exercise?.title ?? ''), m['code'] as String? ?? ''));
+      if (m['type'] == 'download') unawaited(downloadText(workspaceFilenameFor(exercise?.topic ?? draftId,exercise?.category ?? 'Project',activity:exercise?.title ?? ''), m['code'] as String? ?? ''));
     }));
   });
 }

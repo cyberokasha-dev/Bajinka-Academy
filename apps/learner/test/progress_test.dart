@@ -114,4 +114,37 @@ void main() {
     store.dispose();copy.dispose();
   });
 
+
+  test('workbench projects, lab checklists and general Python files survive backup restore', () async {
+    final store = LearnerStore(storage: MemoryStorage());
+    await store.start();
+    store.edit('workbench-projects', notes: jsonEncode([{'id':'p1','title':'Python Log Parser','status':'Building'}]));
+    store.edit('wb-lab', notes: 'Fictional SOC case notes');
+    store.edit('wb-lab-network-builder', notes: jsonEncode(['Firewall','Router']));
+    store.edit('workbench-python', code: 'print("workbench")');
+    await store.pending;
+    await store.saveFile(
+      'workbench-python',
+      topicId: 'workbench-python',
+      category: 'Project',
+      title: 'Workbench script',
+      content: 'print("workbench")',
+    );
+
+    final backup = store.exportBackup();
+    expect(LearnerStore.validateBackup(backup)['drafts'], isA<Map>());
+    final restored = LearnerStore(storage: MemoryStorage());
+    await restored.start();
+    await restored.restore(backup);
+
+    expect(restored.draft('workbench-projects')['notes'], contains('Python Log Parser'));
+    expect(restored.draft('wb-lab')['notes'], 'Fictional SOC case notes');
+    expect(restored.draft('wb-lab-network-builder')['notes'], contains('Firewall'));
+    expect(restored.draft('workbench-python')['code'], 'print("workbench")');
+    expect(restored.files['workbench-python']?['filename'], 'workbench-python-project-workbench-script.py');
+    expect(restored.files['workbench-python']?['category'], 'Project');
+    store.dispose();
+    restored.dispose();
+  });
+
 }

@@ -1,5 +1,5 @@
 name: bajinka_academy
-description: Bajinka Academy learner application.
+description: Bajinka Workbench practical development application.
 publish_to: none
 version: 0.8.0+11
 environment:
