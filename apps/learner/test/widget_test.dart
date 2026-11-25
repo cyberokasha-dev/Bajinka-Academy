@@ -26,7 +26,7 @@ void main() {
     expect(sections, isNot(contains('My Course')));
     expect(sections, isNot(contains('Assessments')));
     expect(tester.takeException(), isNull);
-    store.dispose();
+
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
 
   testWidgets('projects can be created and stored in the workbench record', (tester) async {
@@ -45,7 +45,7 @@ void main() {
     expect(find.text('Python Log Parser'), findsOneWidget);
     expect(store.draft('workbench-projects')['notes'], contains('Python Log Parser'));
     expect(tester.takeException(), isNull);
-    store.dispose();
+
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
 
   testWidgets('cybersecurity notes and checklist selections persist between visits', (tester) async {
@@ -69,7 +69,7 @@ void main() {
     expect(item.value, isTrue);
     expect(tester.widget<TextField>(find.byType(TextField).last).controller?.text, 'Reviewed the fictional office network case.');
     expect(tester.takeException(), isNull);
-    store.dispose();
+
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
 
   testWidgets('Python Studio opens its workspace page without course-topic dependencies', (tester) async {
@@ -85,7 +85,7 @@ void main() {
     expect(find.text('Python Studio'), findsWidgets);
     expect(find.text('The Python runner is available on web and Android.'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    store.dispose();
+
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
 
   testWidgets('phone dashboard has no overflow', (tester) async {
@@ -98,7 +98,7 @@ void main() {
     await tester.pumpWidget(AcademyApp(store: store));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    store.dispose();
+
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
 
   testWidgets('My Files accepts and displays a general Python Studio workspace', (tester) async {
@@ -119,6 +119,6 @@ void main() {
     expect(find.text('workbench-python-project-workbench-script.py'), findsOneWidget);
     expect(find.byTooltip('Download this saved file'), findsOneWidget);
     expect(tester.takeException(), isNull);
-    store.dispose();
+
   }, variant: TargetPlatformVariant({TargetPlatform.linux}));
 }
