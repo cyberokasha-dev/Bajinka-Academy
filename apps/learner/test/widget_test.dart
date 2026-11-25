@@ -40,7 +40,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'Python Log Parser');
     await tester.tap(find.text('Save').last);
     await tester.pumpAndSettle();
-    await store.pending;
+    await tester.runAsync(() async { await store.pending; });
 
     expect(find.text('Python Log Parser'), findsOneWidget);
     expect(store.draft('workbench-projects')['notes'], contains('Python Log Parser'));
@@ -57,7 +57,7 @@ void main() {
     await tester.tap(find.text('Internet connection'));
     await tester.enterText(find.byType(TextField).last, 'Reviewed the fictional office network case.');
     await tester.pumpAndSettle();
-    await store.pending;
+    await tester.runAsync(() async { await store.pending; });
 
     expect(store.draft('wb-lab')['notes'], 'Reviewed the fictional office network case.');
     expect(store.draft('wb-lab-network-builder')['notes'], contains('Internet connection'));
@@ -103,14 +103,16 @@ void main() {
 
   testWidgets('My Files accepts and displays a general Python Studio workspace', (tester) async {
     final store = LearnerStore(storage: MemoryStorage());
-    await store.start();
-    await store.saveFile(
-      'workbench-python',
-      topicId: 'workbench-python',
-      category: 'Project',
-      title: 'Workbench script',
-      content: 'print("ready")',
-    );
+    await tester.runAsync(() async {
+      await store.start();
+      await store.saveFile(
+        'workbench-python',
+        topicId: 'workbench-python',
+        category: 'Project',
+        title: 'Workbench script',
+        content: 'print("ready")',
+      );
+    });
 
     await tester.pumpWidget(AcademyApp(store: store));
     await tester.pumpAndSettle();
