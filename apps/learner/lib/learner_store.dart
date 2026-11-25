@@ -16,8 +16,8 @@ class MemoryStorage implements DeviceStorage {
 class WorkspaceConflict implements Exception { const WorkspaceConflict(); }
 
 class LearnerStore extends ChangeNotifier {
-  LearnerStore({DeviceStorage? storage, this.cloud=false}) : storage = storage ?? MemoryStorage();
-  final bool cloud;
+  LearnerStore({DeviceStorage? storage, this.cloud=false, this.temporary=false}) : storage = storage ?? MemoryStorage();
+  final bool cloud, temporary;
   bool loadFailed=false, saveFailed=false, conflict=false;
   bool _saving=false;
   String? _queuedSnapshot;
@@ -58,7 +58,7 @@ class LearnerStore extends ChangeNotifier {
           await storage.write(key, exportBackup());
         }
       }
-      saveStatus=cloud?'Loaded from Supabase':'Saved on this device';
+      saveStatus=cloud?'Loaded from Supabase':temporary?'Temporary session only — not saved':'Saved on this device';
     } catch (_) {loadFailed=true;message=cloud?'Cloud workspace could not load. Check your connection and retry.':'Workspace could not load.';saveStatus='Storage unavailable';}
     loading = false; changed();
   }
@@ -89,7 +89,7 @@ class LearnerStore extends ChangeNotifier {
     await save();
   }
   Future<void> save() {
-    saveStatus=cloud?'Saving to Supabase…':'Saving on this device…';changed();
+    saveStatus=cloud?'Saving to Supabase…':temporary?'Temporary session only — not saved':'Saving on this device…';changed();
     _queuedSnapshot=exportBackup();
     if(_saving)return pending;
     _saving=true;
@@ -100,7 +100,7 @@ class LearnerStore extends ChangeNotifier {
         catch(e){saveFailed=true;conflict=e is WorkspaceConflict;_queuedSnapshot=null;message=conflict?'Newer work exists in Supabase. Download your current work before reloading the cloud copy.':cloud?'Not saved to Supabase. Keep this page open and retry when connected.':'Save failed. Keep this page open.';}
       }
       _saving=false;
-      saveStatus=saveFailed?'Unsaved changes':cloud?'Saved to Supabase':'Saved on this device';changed();
+      saveStatus=saveFailed?'Unsaved changes':cloud?'Saved to Supabase':temporary?'Temporary session only — not saved':'Saved on this device';changed();
     });
     return pending;
   }
