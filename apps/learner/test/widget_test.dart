@@ -78,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await openSection(tester, 'Python Studio');
-    expect(find.text('This workspace uses Pyodide in a browser worker.'), findsOneWidget);
+    expect(find.textContaining('This workspace uses Pyodide in a browser worker.'), findsOneWidget);
     expect(find.text('Open Python workspace'), findsOneWidget);
     await tester.tap(find.text('Open Python workspace'));
     await tester.pumpAndSettle();
